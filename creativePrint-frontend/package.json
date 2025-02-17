@@ -12,11 +12,14 @@
   "dependencies": {
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-slot": "^1.1.2",
+    "@react-spring/three": "~9.7.5",
     "@react-three/drei": "^9.121.5",
     "@react-three/fiber": "^8.17.14",
     "@reduxjs/toolkit": "^2.5.1",
     "@types/three": "^0.173.0",
     "axios": "^1.7.9",
+    "class-variance-authority": "^0.7.1",
     "creativeprint-frontend": "file:",
     "framer-motion": "^12.4.3",
     "lucide-react": "^0.475.0",
@@ -26,13 +29,16 @@
     "react-intersection-observer": "^9.15.1",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
-    "three": "^0.173.0"
+    "recharts": "^2.15.1",
+    "tailwind-merge": "^3.0.1",
+    "three": "^0.158.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
     "@types/next": "^9.0.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@types/recharts": "^1.8.29",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.19.0",
