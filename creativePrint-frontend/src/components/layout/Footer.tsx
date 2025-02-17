@@ -59,7 +59,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-gray-200 text-center">
-          <p className="text-gray-600">&copy; 2023 PrintOnDemand. All rights reserved.</p>
+          <p className="text-gray-600">&copy; 2025 PrintOnDemand. All rights reserved.</p>
         </div>
       </div>
     </footer>

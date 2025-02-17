@@ -1,7 +1,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useDispatch } from "react-redux"
-import { changePassword } from "../../store/slices/userSlice"
+import changePassword from "../../store/slices/userSlice"
 import type { ChangePasswordData } from "../../types/user"
 
 export default function ChangePasswordForm() {
