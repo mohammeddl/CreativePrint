@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import type { User, UserState, UpdateProfileData, ChangePasswordData } from "../../types/user"
+import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
+import type { User, UserState, UpdateProfileData } from "../../types/user"
 
 const initialState: UserState = {
   currentUser: null,
@@ -16,6 +16,7 @@ export const fetchCurrentUser = createAsyncThunk("user/fetchCurrentUser", async 
     lastName: "Doe",
     email: "john.doe@example.com",
     avatar: "/placeholder.svg",
+    themePreference: "light",
   } as User
 })
 
@@ -25,20 +26,19 @@ export const updateProfile = createAsyncThunk("user/updateProfile", async (profi
   return {
     ...profileData,
     id: "1",
-    avatar: "/placeholder.svg",
   } as User
-})
-
-export const changePassword = createAsyncThunk("user/changePassword", async (passwordData: ChangePasswordData) => {
-  // TODO: Replace with actual API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return true
 })
 
 const userSlice = createSlice({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    setThemePreference: (state, action: PayloadAction<"light" | "dark">) => {
+      if (state.currentUser) {
+        state.currentUser.themePreference = action.payload
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCurrentUser.pending, (state) => {
@@ -65,19 +65,10 @@ const userSlice = createSlice({
         state.loading = false
         state.error = action.error.message || "Failed to update profile"
       })
-      .addCase(changePassword.pending, (state) => {
-        state.loading = true
-        state.error = null
-      })
-      .addCase(changePassword.fulfilled, (state) => {
-        state.loading = false
-      })
-      .addCase(changePassword.rejected, (state, action) => {
-        state.loading = false
-        state.error = action.error.message || "Failed to change password"
-      })
   },
 })
+
+export const { setThemePreference } = userSlice.actions
 
 export default userSlice.reducer
 
