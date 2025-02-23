@@ -16,5 +16,4 @@ import lombok.experimental.SuperBuilder;
 public class Admin extends User {
     private String adminCode;
     private String department;
-    private String accessLevel;
 }

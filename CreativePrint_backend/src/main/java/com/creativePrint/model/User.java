@@ -1,6 +1,17 @@
 package com.creativePrint.model;
 
 import com.creativePrint.enums.Role;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +40,7 @@ public class User implements UserDetails {
     private String firstName;
     private String lastName;
     private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private boolean active;
 
@@ -38,6 +50,10 @@ public class User implements UserDetails {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private UserProfile userProfile;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

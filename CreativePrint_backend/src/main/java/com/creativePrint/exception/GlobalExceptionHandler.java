@@ -14,6 +14,7 @@ import com.creativePrint.exception.entitesCustomExceptions.BadRequestException;
 import com.creativePrint.exception.entitesCustomExceptions.ErrorResponse;
 import com.creativePrint.exception.entitesCustomExceptions.ResourceNotFoundException;
 import com.creativePrint.exception.entitesCustomExceptions.UnauthorizedException;
+import com.creativePrint.exception.entitesCustomExceptions.UserProfileNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -64,5 +65,10 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserProfileNotFoundException.class)
+    public ResponseEntity<String> handleProfileNotFound(UserProfileNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

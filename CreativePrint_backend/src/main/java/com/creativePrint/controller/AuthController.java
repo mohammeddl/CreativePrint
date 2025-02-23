@@ -10,29 +10,53 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "Authentication endpoints")
 public class AuthController {
     private final AuthenticationServiceImpl authenticationService;
 
     @PostMapping("/register")
+    @Operation(summary = "Register a new user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User registered successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body"),
+        @ApiResponse(responseCode = "401", description = "Email already registered")
+    })
     public ResponseEntity<AuthResponse> register(
             @Valid @RequestBody UserRegistrationRequest request) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login with email and password")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request body"),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials or inactive account")
+    })
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.login(request));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+    @Operation(summary = "Logout the currently authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User logged out successfully"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
+    public ResponseEntity<Void> logout(
+            @Parameter(description = "Bearer token", required = true)
+            @RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {   
             String token = authHeader.substring(7);
             authenticationService.logout(token);
         }
