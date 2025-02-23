@@ -31,9 +31,6 @@ public record AdminRegistrationRequest(
 
     @NotBlank(message = "Department is required")
     @Size(min = 2, max = 50, message = "Department must be between 2 and 50 characters")
-    String department,
+    String department
 
-    @NotBlank(message = "Access level is required")
-    @Pattern(regexp = "^(BASIC|INTERMEDIATE|FULL)$", message = "Invalid access level. Must be BASIC, INTERMEDIATE, or FULL")
-    String accessLevel
 ) {}
