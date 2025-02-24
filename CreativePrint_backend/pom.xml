@@ -113,7 +113,7 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -123,6 +123,11 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-data-rest</artifactId>
 			<version>1.6.15</version>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.36.0</version>
 		</dependency>
 	</dependencies>
 

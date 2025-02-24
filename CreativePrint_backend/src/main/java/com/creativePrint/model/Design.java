@@ -22,6 +22,9 @@ public class Design {
     @ElementCollection
     private List<String> elements; 
     
+    @Column(name = "design_url")
+    private String designUrl;
+    
     @ManyToOne
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;

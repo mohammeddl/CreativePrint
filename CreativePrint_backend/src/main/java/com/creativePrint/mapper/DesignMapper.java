@@ -9,10 +9,12 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface DesignMapper {
+    @Mapping(source = "designUrl", target = "designUrl")
     DesignResponse toResponse(Design design);
     
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "creator", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "designUrl", ignore = true) 
     Design toEntity(DesignRequest request);
 }
