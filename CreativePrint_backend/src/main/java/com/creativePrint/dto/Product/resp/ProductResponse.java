@@ -10,8 +10,9 @@ public record ProductResponse(
     Long id,
     String name,
     String description,
-    double basePrice,
+    Double basePrice,
     ProductCategoryResponse category,
-    List<DesignResponse> applicableDesigns,
+    List<ProductVariantResponse> variants,
+    List<ProductDesignResponse> designPlacements,
     Instant createdAt
 ) {}

@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Slf4j
 @Service
@@ -55,7 +56,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.valueOf(request.role().toUpperCase()))
                 .active(true)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now().toInstant(ZoneOffset.UTC))
                 .build();
     
         var savedUser = userRepository.save(user); // User is persisted here

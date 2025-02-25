@@ -41,12 +41,13 @@ public class PartnerController {
     @PostMapping("/products")
     @PreAuthorize("hasRole('PARTNER')")
     public ResponseEntity<ProductResponse> createProduct(
-        @RequestBody @Valid ProductRequest request,
+        @RequestBody @Valid ProductRequest request,     
         @AuthenticationPrincipal User partner
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(partnerProductService.createProduct(request, partner));
     }
+
 
     @GetMapping("/designs")
     @PreAuthorize("hasRole('PARTNER')")

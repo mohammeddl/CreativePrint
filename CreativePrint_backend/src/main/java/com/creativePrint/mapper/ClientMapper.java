@@ -11,12 +11,6 @@ import org.mapstruct.factory.Mappers;
 public interface ClientMapper {
     ClientMapper INSTANCE = Mappers.getMapper(ClientMapper.class);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", constant = "CLIENT")
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "orders", ignore = true)
-    @Mapping(target = "designs", ignore = true)
     Client toEntity(ClientRegistrationRequest request);
 
     ClientResponse toResponse(Client client);

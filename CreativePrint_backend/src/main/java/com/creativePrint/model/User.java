@@ -4,12 +4,6 @@ import com.creativePrint.enums.Role;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Inheritance;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 
 import jakarta.persistence.*;
@@ -21,9 +15,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @SuperBuilder
@@ -47,8 +43,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+    @Column(name = "created_at")
+    private Instant createdAt;
     private LocalDateTime lastLoginAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -83,5 +81,18 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return active;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
