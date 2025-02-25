@@ -3,6 +3,7 @@ package com.creativePrint.model;
 import java.util.Set;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Objects;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,24 +25,34 @@ public class Product {
     private String description;
     private Double basePrice;
 
-    @Version
-    @Builder.Default  
-    private Long version = 0L;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
-    private ProductCategory category;
+    private Categories category;
+
+    @ManyToOne
+    @JoinColumn(name = "design_id", nullable = false)
+    private Design design;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     private Set<ProductVariant> variants = new HashSet<>();
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private Set<ProductDesign> productDesigns = new HashSet<>();
 
     @Column(name = "created_at")
     private Instant createdAt;
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return Objects.equals(id, product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

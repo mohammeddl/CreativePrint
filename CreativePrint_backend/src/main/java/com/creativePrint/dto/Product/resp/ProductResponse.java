@@ -3,7 +3,7 @@ package com.creativePrint.dto.Product.resp;
 import java.time.Instant;
 import java.util.List;
 
-import com.creativePrint.dto.Category.ProductCategoryResponse;
+import com.creativePrint.dto.Category.CategoryResponse;
 import com.creativePrint.dto.Design.resp.DesignResponse;
 
 public record ProductResponse(
@@ -11,8 +11,9 @@ public record ProductResponse(
     String name,
     String description,
     Double basePrice,
-    ProductCategoryResponse category,
+    CategoryResponse category,
+    DesignResponse design,
     List<ProductVariantResponse> variants,
-    List<ProductDesignResponse> designPlacements,
-    Instant createdAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

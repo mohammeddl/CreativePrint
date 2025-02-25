@@ -1,9 +1,9 @@
 package com.creativePrint.repository;
-import com.creativePrint.model.ProductCategory;
+import com.creativePrint.model.Categories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 
-public interface ProductCategoryRepository extends JpaRepository<ProductCategory, Long> {
-    Optional<ProductCategory> findByName(String name);
+public interface ProductCategoryRepository extends JpaRepository<Categories, Long> {
+    Optional<Categories> findByName(String name);
 }
