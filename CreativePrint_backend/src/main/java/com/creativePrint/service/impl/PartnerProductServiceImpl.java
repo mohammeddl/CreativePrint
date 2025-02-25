@@ -2,17 +2,16 @@ package com.creativePrint.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import com.creativePrint.dto.Design.req.DesignPlacementRequest;
 import com.creativePrint.dto.Design.req.DesignRequest;
 import com.creativePrint.dto.Design.resp.DesignResponse;
 import com.creativePrint.dto.Product.req.ProductRequest;
+import com.creativePrint.dto.Product.req.ProductVariantRequest;
 import com.creativePrint.dto.Product.resp.ProductResponse;
 import com.creativePrint.mapper.DesignMapper;
 import com.creativePrint.mapper.ProductMapper;
+import com.creativePrint.model.Categories;
 import com.creativePrint.model.Design;
 import com.creativePrint.model.Product;
-import com.creativePrint.model.ProductCategory;
-import com.creativePrint.model.ProductDesign;
 import com.creativePrint.model.ProductVariant;
 import com.creativePrint.model.User;
 import com.creativePrint.repository.DesignRepository;
@@ -31,9 +30,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -70,48 +68,118 @@ public class PartnerProductServiceImpl implements PartnerService {
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request, User partner) {
-        ProductCategory category = categoryRepository.findById(request.categoryId())
+        // Fetch category and design
+        Categories category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
-
-        // Validate designs and ownership
-        Set<Long> designIds = request.designPlacements().stream()
-                .map(DesignPlacementRequest::designId)
-                .collect(Collectors.toSet());
-        Set<Design> designs = validateDesignOwnership(designIds, partner);
-
-        // Create product
-        Product product = productMapper.toEntity(request, category);
+        Design design = designRepository.findById(request.designId())
+                .orElseThrow(() -> new EntityNotFoundException("Design not found"));
+        if (!design.getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this design");
+        }
+    
+        // Create product (ignore variants from the mapper)
+        Product product = productMapper.toEntity(request);
+        product.setCategory(category);
+        product.setDesign(design);
         product.setCreatedAt(Instant.now());
         product.setUpdatedAt(Instant.now());
-
-        // Add variants
+        
+        // Initialize variants collection
+        if (product.getVariants() == null) {
+            product.setVariants(new HashSet<>());
+        }
+    
+        // First save the product to get an ID
+        Product savedProduct = productRepository.save(product);
+        
+        // Now create and add variants with the saved product
+        Set<ProductVariant> variants = new HashSet<>();
+        for (ProductVariantRequest variantRequest : request.variants()) {
+            ProductVariant variant = ProductVariant.builder()
+                    .size(variantRequest.size())
+                    .color(variantRequest.color())
+                    .priceAdjustment(variantRequest.priceAdjustment())
+                    .stock(variantRequest.stock())
+                    .product(savedProduct)
+                    .build();
+            variants.add(variant);
+        }
+        
+        // Set all variants at once
+        savedProduct.setVariants(variants);
+        
+        // Save again to persist the variants
+        savedProduct = productRepository.save(savedProduct);
+        
+        return productMapper.toResponse(savedProduct);
+    }
+    
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(Long productId, ProductRequest request, User partner) {
+        // Find existing product
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    
+        // Check if partner owns the product through the design
+        if (!existingProduct.getDesign().getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this product");
+        }
+    
+        // Fetch category and design
+        Categories category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        Design design = designRepository.findById(request.designId())
+                .orElseThrow(() -> new EntityNotFoundException("Design not found"));
+        if (!design.getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this design");
+        }
+    
+        // Update product details
+        existingProduct.setName(request.name());
+        existingProduct.setDescription(request.description());
+        existingProduct.setBasePrice(request.basePrice());
+        existingProduct.setCategory(category);
+        existingProduct.setDesign(design);
+        existingProduct.setUpdatedAt(Instant.now());
+    
+        // Get a reference to the current variants (important for orphan removal)
+        Set<ProductVariant> currentVariants = new HashSet<>(existingProduct.getVariants());
+        
+        // Remove all current variants
+        currentVariants.forEach(variant -> existingProduct.getVariants().remove(variant));
+        
+        // Create and add new variants
         request.variants().forEach(variantRequest -> {
             ProductVariant variant = ProductVariant.builder()
                     .size(variantRequest.size())
                     .color(variantRequest.color())
                     .priceAdjustment(variantRequest.priceAdjustment())
                     .stock(variantRequest.stock())
-                    .product(product)
+                    .product(existingProduct)
                     .build();
-            product.getVariants().add(variant);
+            existingProduct.getVariants().add(variant);
         });
+        
+        // Save updated product
+        Product updatedProduct = productRepository.save(existingProduct);
+        
+        return productMapper.toResponse(updatedProduct);
+    }
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId, User partner) {
+        // Find existing product
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        // Add design placements
-        request.designPlacements().forEach(dp -> {
-            Design design = designs.stream()
-                    .filter(d -> d.getId().equals(dp.designId()))
-                    .findFirst()
-                    .orElseThrow();
-            ProductDesign productDesign = ProductDesign.builder()
-                    .product(product)
-                    .design(design)
-                    .placement(dp.placement())
-                    .build();
-            product.getProductDesigns().add(productDesign);
-        });
+        // Check if partner owns the product through the design
+        if (!existingProduct.getDesign().getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this product");
+        }
 
-        Product savedProduct = productRepository.save(product);
-        return productMapper.toResponse(savedProduct);
+        // Delete the product
+        productRepository.delete(existingProduct);
     }
 
     @Override
@@ -120,16 +188,11 @@ public class PartnerProductServiceImpl implements PartnerService {
         return designRepository.findByCreator(partner, pageable)
                 .map(designMapper::toResponse);
     }
-
-    private Set<Design> validateDesignOwnership(Set<Long> designIds, User partner) {
-        Set<Design> designs = designRepository.findByIdInAndCreator(designIds, partner);
-        if (designs.size() != designIds.size()) {
-            Set<Long> foundIds = designs.stream().map(Design::getId).collect(Collectors.toSet());
-            Set<Long> missingIds = designIds.stream()
-                    .filter(id -> !foundIds.contains(id))
-                    .collect(Collectors.toSet());
-            throw new AccessDeniedException("Invalid design IDs or ownership: " + missingIds);
-        }
-        return designs;
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getPartnerProducts(User partner, Pageable pageable) {
+        return productRepository.findByDesignCreator(partner, pageable)
+                .map(productMapper::toResponse);
     }
 }

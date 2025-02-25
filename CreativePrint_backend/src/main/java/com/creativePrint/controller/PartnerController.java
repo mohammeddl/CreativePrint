@@ -31,32 +31,56 @@ public class PartnerController {
     @PostMapping("/designs")
     @PreAuthorize("hasRole('PARTNER')")
     public ResponseEntity<DesignResponse> createDesign(
-        @ModelAttribute @Valid DesignRequest request,
-        @AuthenticationPrincipal User partner
-    ) throws IOException {
+            @ModelAttribute @Valid DesignRequest request,
+            @AuthenticationPrincipal User partner) throws IOException {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(partnerProductService.createDesign(request, partner));
+                .body(partnerProductService.createDesign(request, partner));
+    }
+
+    @GetMapping("/designs")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<Page<DesignResponse>> getDesigns(
+            @AuthenticationPrincipal User partner,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(
+                partnerProductService.getPartnerDesigns(partner, pageable));
     }
 
     @PostMapping("/products")
     @PreAuthorize("hasRole('PARTNER')")
     public ResponseEntity<ProductResponse> createProduct(
-        @RequestBody @Valid ProductRequest request,     
-        @AuthenticationPrincipal User partner
-    ) {
+            @RequestBody @Valid ProductRequest request,
+            @AuthenticationPrincipal User partner) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(partnerProductService.createProduct(request, partner));
+                .body(partnerProductService.createProduct(request, partner));
     }
 
-
-    @GetMapping("/designs")
+    @PutMapping("/products/{productId}")
     @PreAuthorize("hasRole('PARTNER')")
-    public ResponseEntity<Page<DesignResponse>> getDesigns(
-        @AuthenticationPrincipal User partner,
-        @PageableDefault(size = 20) Pageable pageable
-    ) {
+    public ResponseEntity<ProductResponse> updateProduct(
+            @PathVariable Long productId,
+            @RequestBody @Valid ProductRequest request,
+            @AuthenticationPrincipal User partner) {
         return ResponseEntity.ok(
-            partnerProductService.getPartnerDesigns(partner, pageable)
-        );
+                partnerProductService.updateProduct(productId, request, partner));
     }
+
+    @DeleteMapping("/products/{productId}")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<Void> deleteProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal User partner) {
+        partnerProductService.deleteProduct(productId, partner);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/products")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<Page<ProductResponse>> getProducts(
+            @AuthenticationPrincipal User partner,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(
+                partnerProductService.getPartnerProducts(partner, pageable));
+    }
+
 }

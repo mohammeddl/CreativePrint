@@ -13,8 +13,12 @@ import com.creativePrint.model.Product;
 import com.creativePrint.model.User;
 
 public interface PartnerService {
-    DesignResponse createDesign(DesignRequest request, User partner) throws IOException;
     ProductResponse createProduct(ProductRequest request, User partner);
+    ProductResponse updateProduct(Long productId, ProductRequest request, User partner);
+    void deleteProduct(Long productId, User partner);
+    Page<ProductResponse> getPartnerProducts(User partner, Pageable pageable);
+
+    DesignResponse createDesign(DesignRequest request, User partner) throws IOException;
     Page<DesignResponse> getPartnerDesigns(User partner, Pageable pageable);
 
 

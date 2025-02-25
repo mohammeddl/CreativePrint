@@ -10,12 +10,12 @@ import java.time.Instant;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "product_categories")
+@Table(name = "categories")
 @Data
 @Builder
 @NoArgsConstructor 
 @AllArgsConstructor
-public class ProductCategory {
+public class Categories {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

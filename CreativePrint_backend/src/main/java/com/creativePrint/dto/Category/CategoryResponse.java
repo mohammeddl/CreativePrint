@@ -1,6 +1,6 @@
 package com.creativePrint.dto.Category;
 
-public record ProductCategoryResponse(
+public record CategoryResponse(
     Long id,
     String name,
     String description
