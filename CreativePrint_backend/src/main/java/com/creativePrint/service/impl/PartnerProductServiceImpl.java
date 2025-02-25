@@ -113,11 +113,86 @@ public class PartnerProductServiceImpl implements PartnerService {
         
         return productMapper.toResponse(savedProduct);
     }
+    
+    @Override
+    @Transactional
+    public ProductResponse updateProduct(Long productId, ProductRequest request, User partner) {
+        // Find existing product
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+    
+        // Check if partner owns the product through the design
+        if (!existingProduct.getDesign().getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this product");
+        }
+    
+        // Fetch category and design
+        Categories category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        Design design = designRepository.findById(request.designId())
+                .orElseThrow(() -> new EntityNotFoundException("Design not found"));
+        if (!design.getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this design");
+        }
+    
+        // Update product details
+        existingProduct.setName(request.name());
+        existingProduct.setDescription(request.description());
+        existingProduct.setBasePrice(request.basePrice());
+        existingProduct.setCategory(category);
+        existingProduct.setDesign(design);
+        existingProduct.setUpdatedAt(Instant.now());
+    
+        // Get a reference to the current variants (important for orphan removal)
+        Set<ProductVariant> currentVariants = new HashSet<>(existingProduct.getVariants());
+        
+        // Remove all current variants
+        currentVariants.forEach(variant -> existingProduct.getVariants().remove(variant));
+        
+        // Create and add new variants
+        request.variants().forEach(variantRequest -> {
+            ProductVariant variant = ProductVariant.builder()
+                    .size(variantRequest.size())
+                    .color(variantRequest.color())
+                    .priceAdjustment(variantRequest.priceAdjustment())
+                    .stock(variantRequest.stock())
+                    .product(existingProduct)
+                    .build();
+            existingProduct.getVariants().add(variant);
+        });
+        
+        // Save updated product
+        Product updatedProduct = productRepository.save(existingProduct);
+        
+        return productMapper.toResponse(updatedProduct);
+    }
+    @Override
+    @Transactional
+    public void deleteProduct(Long productId, User partner) {
+        // Find existing product
+        Product existingProduct = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        // Check if partner owns the product through the design
+        if (!existingProduct.getDesign().getCreator().equals(partner)) {
+            throw new AccessDeniedException("You don't own this product");
+        }
+
+        // Delete the product
+        productRepository.delete(existingProduct);
+    }
 
     @Override
     @Transactional(readOnly = true)
     public Page<DesignResponse> getPartnerDesigns(User partner, Pageable pageable) {
         return designRepository.findByCreator(partner, pageable)
                 .map(designMapper::toResponse);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getPartnerProducts(User partner, Pageable pageable) {
+        return productRepository.findByDesignCreator(partner, pageable)
+                .map(productMapper::toResponse);
     }
 }
