@@ -11,11 +11,8 @@ import org.mapstruct.factory.Mappers;
 public interface PartnerMapper {
     PartnerMapper INSTANCE = Mappers.getMapper(PartnerMapper.class);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", constant = "PARTNER")
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "products", ignore = true)
     Partner toEntity(PartnerRegistrationRequest request);
 
     PartnerResponse toResponse(Partner partner);

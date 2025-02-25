@@ -3,6 +3,11 @@ package com.creativePrint.mapper;
 import com.creativePrint.dto.req.UserRegistrationRequest;
 import com.creativePrint.dto.resp.UserResponse;
 import com.creativePrint.model.User;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -18,4 +23,8 @@ public interface UserMapper {
     User toEntity(UserRegistrationRequest request);
 
     UserResponse toResponse(User user);
+
+    default LocalDateTime map(Instant instant) {
+        return instant != null ? LocalDateTime.ofInstant(instant, ZoneOffset.UTC) : null;
+    }
 }

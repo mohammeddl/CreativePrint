@@ -1,5 +1,7 @@
 package com.creativePrint.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.*;
@@ -31,5 +33,15 @@ public class UserProfile {
     private String website;
     
     private String socialMediaLinks;
+    
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserProfile that = (UserProfile) o;
+        return Objects.equals(id, that.id);
+    }
+
 
 }
