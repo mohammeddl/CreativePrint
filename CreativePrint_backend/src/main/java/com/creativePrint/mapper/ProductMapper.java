@@ -2,9 +2,9 @@ package com.creativePrint.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import com.creativePrint.dto.Product.req.ProductRequest;
-import com.creativePrint.dto.Product.resp.ProductResponse;
 
+import com.creativePrint.dto.product.req.ProductRequest;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.model.Product;
 
 

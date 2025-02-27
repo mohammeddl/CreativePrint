@@ -1,4 +1,4 @@
-package com.creativePrint.dto.Product.req;
+package com.creativePrint.dto.product.req;
 
 public record ProductVariantRequest(
     String size,

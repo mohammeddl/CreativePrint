@@ -2,11 +2,11 @@ package com.creativePrint.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import com.creativePrint.dto.Design.req.DesignRequest;
-import com.creativePrint.dto.Design.resp.DesignResponse;
-import com.creativePrint.dto.Product.req.ProductRequest;
-import com.creativePrint.dto.Product.req.ProductVariantRequest;
-import com.creativePrint.dto.Product.resp.ProductResponse;
+import com.creativePrint.dto.design.req.DesignRequest;
+import com.creativePrint.dto.design.resp.DesignResponse;
+import com.creativePrint.dto.product.req.ProductRequest;
+import com.creativePrint.dto.product.req.ProductVariantRequest;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.mapper.DesignMapper;
 import com.creativePrint.mapper.ProductMapper;
 import com.creativePrint.model.Categories;
@@ -14,8 +14,8 @@ import com.creativePrint.model.Design;
 import com.creativePrint.model.Product;
 import com.creativePrint.model.ProductVariant;
 import com.creativePrint.model.User;
+import com.creativePrint.repository.CategoriesRepository;
 import com.creativePrint.repository.DesignRepository;
-import com.creativePrint.repository.ProductCategoryRepository;
 import com.creativePrint.repository.ProductRepository;
 import com.creativePrint.service.CloudinaryService;
 import com.creativePrint.service.PartnerService;
@@ -42,7 +42,7 @@ public class PartnerProductServiceImpl implements PartnerService {
     private final DesignMapper designMapper;
     private final ProductRepository productRepository;
     private final DesignRepository designRepository;
-    private final ProductCategoryRepository categoryRepository;
+    private final CategoriesRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
 
     @Override
