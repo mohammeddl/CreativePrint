@@ -92,6 +92,18 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        
+        order.setStatus(status);
+        order.setUpdatedAt(Instant.now());
+        
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toResponse(updatedOrder);
+    }
+
+    @Override
     public List<OrderResponse> getOrderHistory(Long userId) {
         return orderRepository.findByBuyerId(userId).stream()
                 .map(orderMapper::toResponse)
