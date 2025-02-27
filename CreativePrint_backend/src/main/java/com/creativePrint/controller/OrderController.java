@@ -1,10 +1,10 @@
 package com.creativePrint.controller;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +17,7 @@ import com.creativePrint.dto.order.resp.OrderResponse;
 import com.creativePrint.model.User;
 import com.creativePrint.service.OrderService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -33,10 +33,9 @@ public class OrderController {
         @RequestBody @Valid OrderRequest request,
         @AuthenticationPrincipal User user
     ) {
-        // Ensure the authenticated user matches the buyer in the request
-        // if (!user.getId().equals(request.buyerId())) {
-        //     throw new AccessDeniedException("You can only create orders for yourself");
-        // }
+        if (!user.getId().equals(request.buyerId())) {
+            throw new AccessDeniedException("You can only create orders for yourself");
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(orderService.createOrder(request));
     }

@@ -12,6 +12,8 @@ import com.creativePrint.mapper.OrderItemMapper;
 import com.creativePrint.mapper.OrderMapper;
 import com.creativePrint.model.Order;
 import com.creativePrint.model.OrderItem;
+import com.creativePrint.model.Partner;
+import com.creativePrint.model.Product;
 import com.creativePrint.model.ProductVariant;
 import com.creativePrint.model.User;
 import com.creativePrint.repository.OrderRepository;
@@ -36,41 +38,52 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse createOrder(OrderRequest request) {
         User buyer = userRepository.findById(request.buyerId())
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
         Order order = orderMapper.toEntity(request);
         order.setBuyer(buyer);
-        order.setStatus(OrderStatus.PENDING);
+        order.setStatus(OrderStatus.PENDING); 
         order.setCreatedAt(Instant.now());
 
         List<OrderItem> items = request.items().stream()
-            .map(itemRequest -> {
-                ProductVariant variant = variantRepository.findById(itemRequest.variantId())
-                    .orElseThrow(() -> new EntityNotFoundException("Variant not found"));
-                
-                // Check stock
-                // if (variant.getStock() < itemRequest.quantity()) {
-                //     throw new InsufficientStockException("Insufficient stock for variant " + variant.getId());
-                // }
+                .map(itemRequest -> {
+                    ProductVariant variant = variantRepository.findById(itemRequest.variantId())
+                            .orElseThrow(() -> new EntityNotFoundException("Variant not found"));
 
-                // Update stock
-                variant.setStock(variant.getStock() - itemRequest.quantity());
-                variantRepository.save(variant);
+                    // In POD, we don't check stock - everything is printable
 
-                // Create order item
-                OrderItem item = itemMapper.toEntity(itemRequest);
-                item.setVariant(variant);
-                item.setOrder(order);
-                return item;
-            })
-            .toList();
+                    // Create order item
+                    OrderItem item = itemMapper.toEntity(itemRequest);
+                    item.setVariant(variant);
+                    item.setOrder(order);
+                    return item;
+                })
+                .toList();
 
-        // 4. Calculate total price
+        // Calculate total price
         double total = items.stream()
-            .mapToDouble(item -> 
-                (item.getVariant().getPriceAdjustment() + item.getVariant().getProduct().getBasePrice()) 
-                * item.getQuantity()
-            )
-            .sum();
+                .mapToDouble(item -> {
+                    Product product = item.getVariant().getProduct();
+                    User designer = product.getDesign().getCreator();
+
+                    // Base price + variant adjustment
+                    double itemPrice = product.getBasePrice() + item.getVariant().getPriceAdjustment();
+
+                    // Calculate and store royalty information
+                    double royaltyPercentage = 0.0;
+                    if (designer instanceof Partner) {
+                        royaltyPercentage = ((Partner) designer).getCommissionRate();
+                    }
+
+                    // Save royalty info to the order item
+                    item.setRoyaltyAmount(itemPrice * (royaltyPercentage / 100) * item.getQuantity());
+
+                    return itemPrice * item.getQuantity();
+                })
+                .sum();
+
+        // Add tax calculation here
+
         order.setTotalPrice(total);
         order.setItems(items);
 
@@ -81,7 +94,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getOrderHistory(Long userId) {
         return orderRepository.findByBuyerId(userId).stream()
-            .map(orderMapper::toResponse)
-            .toList();
+                .map(orderMapper::toResponse)
+                .toList();
     }
 }

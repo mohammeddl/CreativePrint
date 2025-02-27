@@ -12,6 +12,9 @@ import lombok.*;
 @Entity
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "purchase_orders") 
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
