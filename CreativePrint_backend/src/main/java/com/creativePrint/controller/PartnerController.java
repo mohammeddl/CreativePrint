@@ -10,10 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-import com.creativePrint.dto.Design.req.DesignRequest;
-import com.creativePrint.dto.Design.resp.DesignResponse;
-import com.creativePrint.dto.Product.req.ProductRequest;
-import com.creativePrint.dto.Product.resp.ProductResponse;
+import com.creativePrint.dto.design.req.DesignRequest;
+import com.creativePrint.dto.design.resp.DesignResponse;
+import com.creativePrint.dto.product.req.ProductRequest;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.model.User;
 import com.creativePrint.service.PartnerService;
 

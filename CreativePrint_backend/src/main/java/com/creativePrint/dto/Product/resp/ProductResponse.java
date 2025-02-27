@@ -1,10 +1,10 @@
-package com.creativePrint.dto.Product.resp;
+package com.creativePrint.dto.product.resp;
 
 import java.time.Instant;
 import java.util.List;
 
-import com.creativePrint.dto.Category.CategoryResponse;
-import com.creativePrint.dto.Design.resp.DesignResponse;
+import com.creativePrint.dto.category.CategoryResponse;
+import com.creativePrint.dto.design.resp.DesignResponse;
 
 public record ProductResponse(
     Long id,

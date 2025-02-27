@@ -1,4 +1,4 @@
-package com.creativePrint.dto.Design.req;
+package com.creativePrint.dto.design.req;
 
 import java.util.List;
 

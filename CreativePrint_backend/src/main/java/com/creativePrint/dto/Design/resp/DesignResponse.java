@@ -1,4 +1,4 @@
-package com.creativePrint.dto.Design.resp;
+package com.creativePrint.dto.design.resp;
 
 import java.time.Instant;
 

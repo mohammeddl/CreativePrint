@@ -1,4 +1,4 @@
-package com.creativePrint.dto.Product.resp;
+package com.creativePrint.dto.product.resp;
 
 public record ProductVariantResponse(
     Long id,

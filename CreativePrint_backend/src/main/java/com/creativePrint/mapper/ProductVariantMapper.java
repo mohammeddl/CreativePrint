@@ -1,7 +1,7 @@
 package com.creativePrint.mapper;
 
-import com.creativePrint.dto.Product.req.ProductVariantRequest;
-import com.creativePrint.dto.Product.resp.ProductVariantResponse;
+import com.creativePrint.dto.product.req.ProductVariantRequest;
+import com.creativePrint.dto.product.resp.ProductVariantResponse;
 import com.creativePrint.model.ProductVariant;
 import org.mapstruct.Mapper;
 
