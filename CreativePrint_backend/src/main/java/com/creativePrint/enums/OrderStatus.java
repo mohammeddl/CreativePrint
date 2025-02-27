@@ -1,9 +1,13 @@
 package com.creativePrint.enums;
 
 public enum OrderStatus {
-    PENDING,    
-    PAID,       
+    PENDING,
+    PENDING_PAYMENT,
+    PAYMENT_RECEIVED,
+    PAYMENT_FAILED,
+    IN_PRODUCTION,
     SHIPPED,    
     DELIVERED,  
-    CANCELLED   
+    CANCELLED,
+    REFUNDED
 }

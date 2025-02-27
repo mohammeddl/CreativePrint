@@ -38,7 +38,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/webjars/**",
                                 "/swagger-ui.html",
-                                "/api/users/**"
+                                "/api/users/**",
+                                "/api/payments/paypal/webhook",
+                                "/api/payments/paypal/execute"
                                 )
                         .permitAll()
                         .anyRequest().authenticated())
