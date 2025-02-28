@@ -40,8 +40,9 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api/users/**",
                                 "/api/payments/paypal/webhook",
-                                "/api/payments/paypal/execute"
-                                )
+                                "/api/payments/paypal/execute",
+                                "/api/test/email"
+                        )
                         .permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
