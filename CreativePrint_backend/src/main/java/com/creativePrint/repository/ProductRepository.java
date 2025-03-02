@@ -15,4 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByDesignCreator(User creator, Pageable pageable);
     @Query("SELECT p FROM Product p WHERE (p.category.id = :categoryId OR p.design.creator.id = :designerId) AND p.id != :productId")
     List<Product> findSimilarProducts(@Param("categoryId") Long categoryId, @Param("designerId") Long designerId, @Param("productId") Long productId);
+    List<Product> findTop5ByOrderByCreatedAtDesc();
+
 }
