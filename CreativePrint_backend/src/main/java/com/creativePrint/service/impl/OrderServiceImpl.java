@@ -7,10 +7,12 @@ import java.util.Map;
 
 import com.creativePrint.dto.order.req.OrderStatusUpdateRequest;
 import com.creativePrint.dto.order.resp.OrderStatusHistoryResponse;
+import com.creativePrint.enums.InteractionType;
 import com.creativePrint.exception.entitesCustomExceptions.BadRequestException;
 import com.creativePrint.model.*;
 import com.creativePrint.repository.OrderStatusHistoryRepository;
 import com.creativePrint.service.OrderNotificationService;
+import com.creativePrint.service.RecommendationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper itemMapper;
     private final OrderStatusHistoryRepository statusHistoryRepository;
     private final OrderNotificationService notificationService;
+    private final RecommendationService recommendationService;
 
     private static final Map<OrderStatus, List<OrderStatus>> ALLOWED_TRANSITIONS = createAllowedTransitionsMap();
 
@@ -96,6 +99,12 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(items);
 
         Order savedOrder = orderRepository.save(order);
+        if (savedOrder.getItems() != null) {
+            for (OrderItem item : savedOrder.getItems()) {
+                Product product = item.getVariant().getProduct();
+                recommendationService.trackInteraction(buyer, product, InteractionType.PURCHASE);
+            }
+        }
         notificationService.notifyOrderCreated(savedOrder);
         return orderMapper.toResponse(savedOrder);
     }

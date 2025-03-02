@@ -15,6 +15,7 @@ import com.creativePrint.repository.UserRepository;
 import com.creativePrint.security.JwtService;
 import com.creativePrint.service.AuthenticationService;
 
+import com.creativePrint.service.EmailMarketingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,18 +38,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserProfileRepository userProfileRepository;
+    private final EmailMarketingService emailMarketingService;
 
     @Override
     @Transactional
     public AuthResponse register(UserRegistrationRequest request) {
-        log.info("Starting registration process for email: {}", request.email());
-    
         if (userRepository.existsByEmail(request.email())) {
             log.warn("Registration attempt with existing email: {}", request.email());
             throw new UnauthorizedException("Email already registered");
         }
-    
-        // Build and save the user first
         var user = User.builder()
                 .firstName(request.firstName())
                 .lastName(request.lastName())
@@ -59,24 +57,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .createdAt(LocalDateTime.now().toInstant(ZoneOffset.UTC))
                 .build();
     
-        var savedUser = userRepository.save(user); // User is persisted here
-    
-        // Create and save the profile
+        var savedUser = userRepository.save(user); 
+
         UserProfile profile = UserProfile.builder()
-                .user(savedUser) // Link to the saved user
+                .user(savedUser) 
                 .build();
     
-        userProfileRepository.save(profile); // Persist the profile
-    
-        // Optionally link the profile to the user (for bidirectional consistency)
+        userProfileRepository.save(profile); 
         savedUser.setUserProfile(profile);
-        userRepository.save(savedUser); // Update the user (optional)
-    
-        // Generate JWT and return response
+        userRepository.save(savedUser); 
         var jwtToken = jwtService.generateToken(user);
         saveUserToken(savedUser, jwtToken);
     
-        log.info("Successfully registered user with email: {}", request.email());
+        emailMarketingService.sendWelcomeEmail(savedUser);
         return new AuthResponse(
                 jwtToken,
                 "Bearer",
