@@ -1,7 +1,8 @@
 package com.creativePrint.controller;
 
 import com.creativePrint.dto.auth.req.LoginRequest;
-import com.creativePrint.dto.req.UserRegistrationRequest;
+import com.creativePrint.dto.req.ClientRegistrationRequest;
+import com.creativePrint.dto.req.PartnerRegistrationRequest;
 import com.creativePrint.service.impl.AuthenticationServiceImpl;
 import com.creativePrint.dto.auth.resp.AuthResponse;
 
@@ -17,30 +18,42 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication", description = "Authentication endpoints")
 public class AuthController {
     private final AuthenticationServiceImpl authenticationService;
 
-    @PostMapping("/register")
-    @Operation(summary = "Register a new user")
+    @PostMapping("/register-client")
+    @Operation(summary = "Register a new client")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User registered successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request body"),
-        @ApiResponse(responseCode = "401", description = "Email already registered")
+            @ApiResponse(responseCode = "200", description = "Client registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Email already registered")
     })
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody UserRegistrationRequest request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<AuthResponse> registerClient(
+            @Valid @RequestBody ClientRegistrationRequest request) {
+        return ResponseEntity.ok(authenticationService.registerClient(request));
+    }
+
+    @PostMapping("/register-partner")
+    @Operation(summary = "Register a new partner")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Partner registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Email already registered")
+    })
+    public ResponseEntity<AuthResponse> registerPartner(
+            @Valid @RequestBody PartnerRegistrationRequest request) {
+        return ResponseEntity.ok(authenticationService.registerPartner(request));
     }
 
     @PostMapping("/login")
     @Operation(summary = "Login with email and password")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User logged in successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request body"),
-        @ApiResponse(responseCode = "401", description = "Invalid credentials or inactive account")
+            @ApiResponse(responseCode = "200", description = "User logged in successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request body"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials or inactive account")
     })
     public ResponseEntity<AuthResponse> login(
             @Valid @RequestBody LoginRequest request) {
@@ -50,13 +63,13 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout the currently authenticated user")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "User logged out successfully"),
-        @ApiResponse(responseCode = "401", description = "Invalid token")
+            @ApiResponse(responseCode = "200", description = "User logged out successfully"),
+            @ApiResponse(responseCode = "401", description = "Invalid token")
     })
     public ResponseEntity<Void> logout(
             @Parameter(description = "Bearer token", required = true)
             @RequestHeader("Authorization") String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {   
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             authenticationService.logout(token);
         }

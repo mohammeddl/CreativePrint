@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sun, Moon, Upload } from "lucide-react"
-import { fetchCurrentUser, updateProfile } from "../../store/slices/userSlice"
+import { fetchCurrentUser } from "../../store/slices/userSlice"
 import Header from "../../components/layout/Header"
 import Footer from "../../components/layout/Footer"
 import type { RootState } from "../../store/store"
@@ -24,7 +24,7 @@ export default function ProfileEditPage() {
   const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
 
   useEffect(() => {
-    dispatch(fetchCurrentUser())
+    // dispatch(fetchCurrentUser())
   }, [dispatch])
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function ProfileEditPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    dispatch(updateProfile(formData))
+    // dispatch(updateProfile(formData))
   }
 
   const toggleTheme = () => {

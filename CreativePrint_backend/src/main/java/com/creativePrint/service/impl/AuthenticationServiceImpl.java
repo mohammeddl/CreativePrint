@@ -1,12 +1,15 @@
 package com.creativePrint.service.impl;
 
 import com.creativePrint.dto.auth.req.LoginRequest;
-import com.creativePrint.dto.req.UserRegistrationRequest;
+import com.creativePrint.dto.req.ClientRegistrationRequest;
+import com.creativePrint.dto.req.PartnerRegistrationRequest;
 import com.creativePrint.dto.auth.resp.AuthResponse;
 import com.creativePrint.exception.entitesCustomExceptions.UnauthorizedException;
 import com.creativePrint.model.Token;
 import com.creativePrint.enums.Role;
 import com.creativePrint.enums.TokenType;
+import com.creativePrint.model.Client;
+import com.creativePrint.model.Partner;
 import com.creativePrint.model.User;
 import com.creativePrint.model.UserProfile;
 import com.creativePrint.repository.TokenRepository;
@@ -14,8 +17,10 @@ import com.creativePrint.repository.UserProfileRepository;
 import com.creativePrint.repository.UserRepository;
 import com.creativePrint.security.JwtService;
 import com.creativePrint.service.AuthenticationService;
-
 import com.creativePrint.service.EmailMarketingService;
+import com.creativePrint.mapper.ClientMapper;
+import com.creativePrint.mapper.PartnerMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,9 +30,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,44 +43,104 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserProfileRepository userProfileRepository;
     private final EmailMarketingService emailMarketingService;
+    private final ClientMapper clientMapper;
+    private final PartnerMapper partnerMapper;
 
     @Override
     @Transactional
-    public AuthResponse register(UserRegistrationRequest request) {
+    public AuthResponse registerClient(ClientRegistrationRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new UnauthorizedException("Email already registered");
+        }
+
+        // Map ClientRegistrationRequest to Client entity
+        Client client = clientMapper.toEntity(request);
+
+        // Set common fields
+        client.setPassword(passwordEncoder.encode(request.password()));
+        client.setRole(Role.CLIENT);
+        client.setActive(true);
+        client.setCreatedAt(Instant.now());
+
+        // Save the client
+        User savedUser = userRepository.save(client);
+
+        // Create and associate user profile
+        UserProfile profile = UserProfile.builder()
+                .user(savedUser)
+                .build();
+
+        userProfileRepository.save(profile);
+        savedUser.setUserProfile(profile);
+        userRepository.save(savedUser);
+
+        // Generate and save token
+        var jwtToken = jwtService.generateToken(savedUser);
+        saveUserToken(savedUser, jwtToken);
+
+        // Send welcome email
+        emailMarketingService.sendWelcomeEmail(savedUser);
+
+        return new AuthResponse(
+                jwtToken,
+                "Bearer",
+                client.getRole().name(),
+                client.getId().toString(),
+                client.getFirstName(),
+                client.getLastName(),
+                client.getEmail(),
+                LocalDateTime.now().plusDays(1)
+        );
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse registerPartner(PartnerRegistrationRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             log.warn("Registration attempt with existing email: {}", request.email());
             throw new UnauthorizedException("Email already registered");
         }
-        var user = User.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .role(Role.valueOf(request.role().toUpperCase()))
-                .active(true)
-                .createdAt(LocalDateTime.now().toInstant(ZoneOffset.UTC))
-                .build();
-    
-        var savedUser = userRepository.save(user); 
 
+        // Map PartnerRegistrationRequest to Partner entity
+        Partner partner = partnerMapper.toEntity(request);
+
+        // Set common fields
+        partner.setPassword(passwordEncoder.encode(request.password()));
+        partner.setRole(Role.PARTNER);
+        partner.setActive(true);
+        partner.setCreatedAt(Instant.now());
+
+        // Save the partner
+        User savedUser = userRepository.save(partner);
+
+        // Create and associate user profile
         UserProfile profile = UserProfile.builder()
-                .user(savedUser) 
+                .user(savedUser)
                 .build();
-    
-        userProfileRepository.save(profile); 
+
+        userProfileRepository.save(profile);
         savedUser.setUserProfile(profile);
-        userRepository.save(savedUser); 
-        var jwtToken = jwtService.generateToken(user);
+        userRepository.save(savedUser);
+
+        // Generate and save token
+        var jwtToken = jwtService.generateToken(savedUser);
         saveUserToken(savedUser, jwtToken);
-    
+
+        // Send welcome email
         emailMarketingService.sendWelcomeEmail(savedUser);
+
         return new AuthResponse(
                 jwtToken,
                 "Bearer",
-                user.getRole().name(),
-                LocalDateTime.now().plusDays(1));
+                partner.getRole().name(),
+                partner.getId().toString(),
+                partner.getFirstName(),
+                partner.getLastName(),
+                partner.getEmail(),
+                LocalDateTime.now().plusDays(1)
+        );
     }
-    
+
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
@@ -99,11 +163,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
 
+
         return new AuthResponse(
                 jwtToken,
                 "Bearer",
                 user.getRole().name(),
-                LocalDateTime.now().plusDays(1));
+                user.getId().toString(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                LocalDateTime.now().plusDays(1)
+        );
     }
 
     @Override
