@@ -1,206 +1,308 @@
-"use client"
+import React, { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 
-import type React from "react"
-import { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { motion, AnimatePresence } from "framer-motion"
-import { Sun, Moon, Upload } from "lucide-react"
-import { fetchCurrentUser } from "../../store/slices/userSlice"
-import Header from "../../components/layout/Header"
-import Footer from "../../components/layout/Footer"
-import type { RootState } from "../../store/store"
-import type { UpdateProfileData } from "../../types/user"
+import { RootState } from '../../store/store'
+import { fetchUserProfile, updateUserProfile } from '../../store/slices/userProfileSlice'
+import Header from '../../components/layout/Header'
+import Footer from '../../components/layout/Footer'
+import DebugInfo from '../../components/profile/DebugInfo'
+
+// Import profile components
+import { ProfileHeader } from '../../components/profile/ProfileHeader'
+import { ProfileBioSection } from '../../components/profile/ProfileBioSection'
+import { ProfileWebsiteSection } from '../../components/profile/ProfileWebsiteSection'
+import { ProfileSocialMediaSection } from '../../components/profile/ProfileSocialMediaSection'
+
+interface ProfileState {
+  bio: string
+  website: string
+  socialMediaLinks: string
+  profilePicture?: File | null
+}
 
 export default function ProfileEditPage() {
   const dispatch = useDispatch()
-  const { currentUser, loading, error } = useSelector((state: RootState) => state.user)
-  const [formData, setFormData] = useState<UpdateProfileData>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    avatar: "",
-    themePreference: "light",
+  const { currentUser, userId, loading: userLoading, isAuthenticated } = useSelector((state: RootState) => state.user)
+  const { profile, loading: profileLoading, error } = useSelector((state: RootState) => state.userProfile)
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [profileData, setProfileData] = useState<ProfileState>({
+    bio: '',
+    website: '',
+    socialMediaLinks: '',
+    profilePicture: null
   })
-  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null)
-
-  useEffect(() => {
-    // dispatch(fetchCurrentUser())
-  }, [dispatch])
-
-  useEffect(() => {
-    if (currentUser) {
-      setFormData({
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
-        email: currentUser.email,
-        avatar: currentUser.avatar || "",
-        themePreference: currentUser.themePreference,
-      })
-      setPreviewAvatar(currentUser.avatar || null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  
+  // Check if we need to get user ID from localStorage if it's not in Redux state
+  const getUserId = () => {
+    if (userId) return userId;
+    if (currentUser?.id) return currentUser.id;
+    
+    // Fallback to localStorage
+    const userDataStr = localStorage.getItem('user-current');
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        return userData.userId;
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
     }
-  }, [currentUser])
+    return null;
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+  // Create user data from local storage if not in Redux
+  const getUserData = () => {
+    if (currentUser) return currentUser;
+    
+    const userDataStr = localStorage.getItem('user-current');
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        return {
+          id: userData.userId,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
+          role: userData.role,
+          themePreference: 'light'
+        };
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+    return null;
+  };
+
+  // Fetch user profile when component mounts
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const actualUserId = getUserId();
+      
+      if (actualUserId && !profile && !profileLoading) {
+        console.log("Fetching profile for user ID:", actualUserId);
+        try {
+          await dispatch(fetchUserProfile(actualUserId) as any);
+        } catch (error) {
+          console.error("Error fetching profile:", error);
+          toast.error("Could not load profile");
+        }
+      }
+    };
+    
+    fetchProfile();
+  }, [currentUser, profile, profileLoading, dispatch]);
+
+  // Update local state when profile data is fetched
+  useEffect(() => {
+    if (profile) {
+      setProfileData({
+        bio: profile.bio || '',
+        website: profile.website || '',
+        socialMediaLinks: profile.socialMediaLinks || '',
+        profilePicture: null
+      })
+    }
+  }, [profile])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setProfileData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setProfileData(prev => ({
+        ...prev,
+        profilePicture: file
+      }))
+      
+      // Create preview
       const reader = new FileReader()
       reader.onloadend = () => {
-        setPreviewAvatar(reader.result as string)
-        setFormData({ ...formData, avatar: reader.result as string })
+        setPreviewImage(reader.result as string)
       }
       reader.readAsDataURL(file)
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // dispatch(updateProfile(formData))
+  const handleSubmit = async () => {
+    const actualUserId = getUserId();
+    
+    if (!actualUserId) {
+      toast.error('You must be logged in to update your profile')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('bio', profileData.bio)
+    formData.append('website', profileData.website)
+    formData.append('socialMediaLinks', profileData.socialMediaLinks)
+    
+    if (profileData.profilePicture) {
+      // Use 'image' field name to match the backend's UserProfileRequestDTO
+      formData.append('image', profileData.profilePicture)
+    }
+
+    try {
+      await dispatch(updateUserProfile({
+        userId: actualUserId,
+        formData: formData
+      }) as any).unwrap()
+      setIsEditing(false)
+      toast.success('Profile updated successfully!')
+    } catch (error) {
+      console.error('Profile update failed', error)
+      toast.error('Failed to update profile')
+    }
   }
 
-  const toggleTheme = () => {
-    setFormData({
-      ...formData,
-      themePreference: formData.themePreference === "light" ? "dark" : "light",
-    })
+  const cancelEditing = () => {
+    setIsEditing(false)
+    setPreviewImage(null)
+    // Reset to original values
+    if (profile) {
+      setProfileData({
+        bio: profile.bio || '',
+        website: profile.website || '',
+        socialMediaLinks: profile.socialMediaLinks || '',
+        profilePicture: null
+      })
+    }
   }
 
-  if (loading) {
-    return <div>Loading...</div>
+  // Directly check local storage for token
+  const token = localStorage.getItem('token');
+  const actuallyAuthenticated = !!token;
+  const userData = getUserData();
+
+  if (userLoading || profileLoading) {
+    return <div className="flex justify-center items-center h-screen">Loading profile...</div>;
+  }
+
+  if ((!isAuthenticated && !actuallyAuthenticated) || (!currentUser && !userData)) {
+    return <div className="flex justify-center items-center h-screen">Please log in</div>;
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8 flex justify-center items-center">
+          <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">Error Loading Profile</h2>
+            <p className="text-gray-700 mb-6">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+        <Footer />
+        <DebugInfo />
+      </div>
+    );
   }
 
-  if (!currentUser) {
-    return <div>User not found</div>
-  }
+  // Use either Redux user data or localStorage user data
+  const userToDisplay = userData || {
+    id: getUserId() || "",
+    firstName: "User",
+    lastName: "",
+    email: "",
+    role: "USER"
+  };
 
   return (
-    <div className={`min-h-screen flex flex-col ${formData.themePreference === "dark" ? "dark" : ""}`}>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <motion.div
+      <div className="container mx-auto px-4 py-8">
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden"
+          className="max-w-4xl mx-auto"
         >
-          <div className="p-8">
-            <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Edit Profile</h1>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex items-center justify-center">
-                <div className="relative">
-                  <motion.img
+          {/* Profile Header Component */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden mb-6">
+            <ProfileHeader 
+              user={userToDisplay}
+              isEditing={isEditing}
+              previewImage={previewImage}
+              onEditToggle={() => setIsEditing(true)}
+              onSubmit={handleSubmit}
+              onCancel={cancelEditing}
+              onFileChange={handleFileChange}
+            />
+          </div>
+
+          {/* Profile Details */}
+          <div className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }} className="space-y-6">
+              {/* Bio Section */}
+              <ProfileBioSection 
+                bio={profileData.bio}
+                isEditing={isEditing}
+                onChange={handleInputChange}
+              />
+
+              {/* Website Section */}
+              <ProfileWebsiteSection 
+                website={profileData.website}
+                isEditing={isEditing}
+                onChange={handleInputChange}
+              />
+
+              {/* Social Media Section */}
+              <ProfileSocialMediaSection 
+                socialMediaLinks={profileData.socialMediaLinks}
+                isEditing={isEditing}
+                onChange={handleInputChange}
+              />
+              
+              {/* Edit mode buttons */}
+              {isEditing && (
+                <div className="flex justify-end space-x-4 mt-6">
+                  <motion.button
+                    type="button"
+                    onClick={cancelEditing}
                     whileHover={{ scale: 1.05 }}
-                    src={previewAvatar || "/placeholder.svg"}
-                    alt="Avatar"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-purple-500"
-                  />
-                  <label
-                    htmlFor="avatar-upload"
-                    className="absolute bottom-0 right-0 bg-purple-500 rounded-full p-2 cursor-pointer"
+                    whileTap={{ scale: 0.95 }}
+                    className="px-5 py-3 rounded-lg border border-gray-300 text-gray-700 shadow-sm 
+                              hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                   >
-                    <Upload className="w-5 h-5 text-white" />
-                  </label>
-                  <input
-                    type="file"
-                    id="avatar-upload"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-5 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg
+                              hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                  >
+                    Save Changes
+                  </motion.button>
                 </div>
-              </div>
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  First Name
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme Preference</span>
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  <AnimatePresence initial={false} mode="wait">
-                    {formData.themePreference === "light" ? (
-                      <motion.div
-                        key="sun"
-                        initial={{ opacity: 0, rotate: -180 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: 180 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Sun className="w-5 h-5 text-yellow-500" />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="moon"
-                        initial={{ opacity: 0, rotate: 180 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: -180 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Moon className="w-5 h-5 text-blue-500" />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </button>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="submit"
-                className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-              >
-                Update Profile
-              </motion.button>
+              )}
             </form>
           </div>
         </motion.div>
-      </main>
+      </div>
       <Footer />
+      
+      {/* Debug Component */}
+      <DebugInfo />
     </div>
   )
 }
-

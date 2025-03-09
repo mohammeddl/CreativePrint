@@ -57,10 +57,22 @@ export const fetchCurrentUser = createAsyncThunk(
   "user/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      const user = await authService.getCurrentUser();
-      return user;
+      const userStr = localStorage.getItem('user-current');
+      if (!userStr) {
+        throw new Error('No user data found in local storage');
+      }
+      
+      const userData = JSON.parse(userStr);
+      return {
+        id: userData.userId,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        role: userData.role,
+        themePreference: 'light' 
+      };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch user");
+      return rejectWithValue(error.message || "Failed to fetch user");
     }
   }
 );

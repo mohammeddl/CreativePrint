@@ -8,10 +8,12 @@ import com.creativePrint.service.UserProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users/{userId}/profile")
@@ -29,11 +31,11 @@ public class UserProfileController {
         return ResponseEntity.ok(userProfileService.getProfileByUserId(userId));
     }
 
-    @PatchMapping
+    @PatchMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<UserProfileResponseDTO> updateProfile(
             @PathVariable Long userId,
-            @RequestBody @Valid UserProfileRequestDTO dto,
-            @AuthenticationPrincipal User authenticatedUser) {
+            @ModelAttribute @Valid UserProfileRequestDTO dto,
+            @AuthenticationPrincipal User authenticatedUser) throws Exception {
         if (!userId.equals(authenticatedUser.getId())) {
             throw new AccessDeniedException("Unauthorized profile update");
         }
