@@ -33,6 +33,9 @@ public class UserProfile {
     private String website;
     
     private String socialMediaLinks;
+
+    @Column(name = "image")
+    private String image;
     
 
     @Override

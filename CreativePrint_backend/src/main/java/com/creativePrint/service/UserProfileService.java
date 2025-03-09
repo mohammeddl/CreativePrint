@@ -7,5 +7,5 @@ import com.creativePrint.model.UserProfile;
 
 public interface UserProfileService {
     UserProfileResponseDTO getProfileByUserId(Long userId);
-    UserProfileResponseDTO updateProfile(User user, UserProfileRequestDTO dto);
+    UserProfileResponseDTO updateProfile(User user, UserProfileRequestDTO dto) throws Exception;
 }

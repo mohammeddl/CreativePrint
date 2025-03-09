@@ -4,9 +4,8 @@ export interface User {
   lastName: string
   email: string
   avatar?: string
-  themePreference: "light" | "dark"
+  themePreference?: "light" | "dark"
   role?: 'CLIENT' | 'PARTNER' | 'ADMIN'
-  token?: string
 }
 
 export interface UserState {
@@ -19,12 +18,32 @@ export interface UserState {
   userId: string | null;
   expiresAt: string | null;
 }
+
 export interface UpdateProfileData {
   firstName: string
   lastName: string
   email: string
   avatar?: string
-  themePreference: "light" | "dark"
+  themePreference?: "light" | "dark"
+}
+
+export interface UpdateUserProfileData {
+  bio?: string
+  website?: string
+  socialMediaLinks?: string
+  profilePicture?: File
+}
+
+export interface UserProfile {
+  id?: number;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  bio?: string;
+  website?: string;
+  socialMediaLinks?: string;
+  profilePicture?: string;
+  role?: string;
 }
 
 export interface ChangePasswordData {
