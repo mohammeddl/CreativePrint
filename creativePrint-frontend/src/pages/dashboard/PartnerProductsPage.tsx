@@ -4,6 +4,7 @@ import { PlusCircle, Search, Edit, Trash, X, ExternalLink, ShoppingBag } from "l
 import { api } from "../../components/services/api/axios"
 import toast from "react-hot-toast"
 import { Product, ProductVariant } from "../../types/product"
+import Swal from "sweetalert2"
 
 
 export default function PartnerProductsPage() {
@@ -87,26 +88,45 @@ export default function PartnerProductsPage() {
   }
 
   const handleDeleteProduct = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this product?")) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#9333ea', 
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+  
+    if (result.isConfirmed) {
       try {
-        await api.delete(`/partner/products/${id}`)
-        setProducts(products.filter(product => product.id !== id))
-        toast.success("Product deleted successfully")
+        await api.delete(`/partner/products/${id}`);
+        setProducts(products.filter(product => product.id !== id));
+        
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Product has been deleted.',
+          icon: 'success',
+          confirmButtonColor: '#9333ea'
+        });
       } catch (error) {
-        console.error("Error deleting product:", error)
-        toast.error("Failed to delete product")
+        console.error("Error deleting product:", error);
+        
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete product.',
+          icon: 'error',
+          confirmButtonColor: '#9333ea'
+        });
       }
     }
-  }
+  };
 
-  // Calculate total inventory for a product across all variants
   const calculateTotalInventory = (variants: ProductVariant[]) => {
     return variants.reduce((total, variant) => total + variant.stock, 0)
   }
 
-  // Calculate number of variant combinations
   const calculateVariantCount = (variants: ProductVariant[]) => {
-    // Get unique sizes and colors
     const sizes = new Set(variants.map(v => v.size))
     const colors = new Set(variants.map(v => v.color))
     

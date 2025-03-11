@@ -4,6 +4,7 @@ import { Upload, Search, X, Trash, Eye, Plus, Edit } from "lucide-react";
 import { productService } from "../../components/services/api/product.service";
 import { Design } from "../../types/product";
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 export default function PartnerDesignsPage() {
   const [designs, setDesigns] = useState<Design[]>([]);
@@ -35,18 +36,40 @@ export default function PartnerDesignsPage() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setPage(0); // Reset to first page when search changes
+    setPage(0); 
   };
 
   const handleDeleteDesign = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this design?")) {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#9333ea', 
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    });
+  
+    if (result.isConfirmed) {
       try {
         await productService.deleteDesign(id);
         setDesigns(designs.filter((design) => design.id !== id));
-        toast.success("Design deleted successfully");
+        
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Design has been deleted.',
+          icon: 'success',
+          confirmButtonColor: '#9333ea'
+        });
       } catch (error) {
         console.error("Error deleting design:", error);
-        toast.error("Failed to delete design");
+        
+        Swal.fire({
+          title: 'Error!',
+          text: 'Failed to delete design.',
+          icon: 'error',
+          confirmButtonColor: '#9333ea'
+        });
       }
     }
   };
