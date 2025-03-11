@@ -9,4 +9,6 @@ import com.creativePrint.model.Categories;
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
     CategoryResponse toResponse(Categories category);
+
+    Object map(Categories category, Class<com.creativePrint.dto.category.CategoryResponse> categoryResponseClass);
 }

@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import store from './store/store'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminDashboard from './pages/admin'
+import PartnerDashboard from './pages/dashboard/PartnerDashboard'
 import ProfileEditPage from './pages/profile/edit'
 import ProductsPage from './pages/products'
 import LandingPage from './pages/landing'
@@ -49,6 +50,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path='/dashboard/*' 
+            element={
+              <ProtectedRoute allowedRoles={['PARTNER']}>
+                <PartnerDashboard />
               </ProtectedRoute>
             }
           />
