@@ -10,5 +10,5 @@ import com.creativePrint.model.Categories;
 public interface CategoryMapper {
     CategoryResponse toResponse(Categories category);
 
-    Object map(Categories category, Class<com.creativePrint.dto.category.CategoryResponse> categoryResponseClass);
+
 }

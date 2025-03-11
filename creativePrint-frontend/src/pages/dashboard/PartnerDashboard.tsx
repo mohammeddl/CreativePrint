@@ -6,6 +6,8 @@ import UploadDesignForm from './UploadDesignForm'
 import PartnerProductsPage from './PartnerProductsPage'
 import ProductForm from './ProductForm'
 import PartnerOrdersPage from './PartnerOrdersPage'
+import TldrawEditor from '../../components/dashboard/TldrawEditor'
+ // Import your custom component
 
 export default function PartnerDashboard() {
   return (
@@ -18,6 +20,7 @@ export default function PartnerDashboard() {
         <Route path="products/new" element={<ProductForm />} />
         <Route path="products/:id/edit" element={<ProductForm />} />
         <Route path="orders" element={<PartnerOrdersPage />} />
+        <Route path='designs/editor' element={<TldrawEditor />} />
       </Route>
     </Routes>
   )

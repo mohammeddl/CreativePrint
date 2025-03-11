@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom"
 import { ArrowLeft, Plus, Trash, Info, Check } from "lucide-react"
 import { api } from "../../components/services/api/axios"
 import toast from "react-hot-toast"
+import Swal from "sweetalert2"
 
 interface Design {
   id: number
@@ -53,19 +54,13 @@ export default function ProductForm() {
     variants: [{ size: "", color: "", priceAdjustment: 0, stock: 0 }]
   })
 
-  // Fetch designs and categories
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch designs
         const designsResponse = await api.get('/partner/designs')
         setDesigns(designsResponse.data.content || [])
-        
-        // Fetch categories
         const categoriesResponse = await api.get('/categories')
         setCategories(categoriesResponse.data || [])
-        
-        // If no categories or designs exist yet, use sample data
         if (!categoriesResponse.data?.length) {
           setCategories([
             { id: 1, name: "T-shirts" },
@@ -92,7 +87,6 @@ export default function ProductForm() {
         }
         
       } catch (error) {
-        console.error("Error fetching data:", error)
         toast.error("Error loading required data")
       }
     }
@@ -122,7 +116,6 @@ export default function ProductForm() {
             }))
           })
         } catch (error) {
-          console.error("Error fetching product:", error)
           toast.error("Failed to load product data")
           navigate('/dashboard/products')
         }
@@ -263,10 +256,20 @@ export default function ProductForm() {
       
       if (isEditing) {
         await api.put(`/partner/products/${id}`, requestData)
-        toast.success("Product updated successfully")
+        Swal.fire({
+          title: 'Success!',
+          text: isEditing ? 'Product updated successfully' : 'Product created successfully',
+          icon: 'success',
+          confirmButtonColor: '#9333ea'
+        });
       } else {
         await api.post('/partner/products', requestData)
-        toast.success("Product created successfully")
+        Swal.fire({
+          title: 'Success!',
+          text: isEditing ? 'Product updated successfully' : 'Product created successfully',
+          icon: 'success',
+          confirmButtonColor: '#9333ea'
+        });
       }
       
       navigate('/dashboard/products')
@@ -280,7 +283,12 @@ export default function ProductForm() {
         if (typeof serverErrors === 'object') {
           setErrors(serverErrors)
         } else {
-          toast.error(error.response.data.message || "Failed to save product")
+          Swal.fire({
+            title: 'Error!',
+            text: error.response?.data?.message || "Failed to save product",
+            icon: 'error',
+            confirmButtonColor: '#9333ea'
+          });
         }
       } else {
         toast.error("Failed to save product. Please try again.")
