@@ -19,4 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findTop5ByOrderByCreatedAtDesc();
     Optional<Product> findByIdAndDesignCreator(Long productId, User creator);
 
+    long countByDesignCreator(User creator);
+
 }
