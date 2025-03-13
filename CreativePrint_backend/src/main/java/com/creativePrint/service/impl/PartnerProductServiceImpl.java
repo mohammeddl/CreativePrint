@@ -204,4 +204,16 @@ public class PartnerProductServiceImpl implements PartnerService {
 
         return productMapper.toResponse(product);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getAllProducts(Pageable pageable, String search) {
+        if (search != null && !search.trim().isEmpty()) {
+            // Implement search logic, for example:
+            return productRepository.findByNameContainingIgnoreCase(search, pageable)
+                    .map(productMapper::toResponse);
+        }
+        return productRepository.findAll(pageable)
+                .map(productMapper::toResponse);
+    }
 }
