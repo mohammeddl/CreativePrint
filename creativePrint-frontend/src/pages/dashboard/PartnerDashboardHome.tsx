@@ -1,75 +1,43 @@
-import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
-import { Link } from "react-router-dom"
-import { PlusCircle, ShoppingBag, Palette, Package, TrendingUp, Upload } from "lucide-react"
-import { RootState } from "../../store/store"
-import { api } from "../../components/services/api/axios"
-
-interface DashboardStats {
-  totalDesigns: number
-  totalProducts: number
-  totalOrders: number
-  recentOrders: any[]
-  recentSales: { date: string; amount: number }[]
-}
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { PlusCircle, ShoppingBag, Palette, Package, TrendingUp, Upload } from "lucide-react";
+import { RootState } from "../../store/store";
+import { dashboardService, DashboardStats } from "../../components/services/api/dashboard.service";
 
 export default function PartnerDashboardHome() {
-  const { currentUser } = useSelector((state: RootState) => state.user)
+  const { currentUser } = useSelector((state: RootState) => state.user);
   const [stats, setStats] = useState<DashboardStats>({
     totalDesigns: 0,
     totalProducts: 0,
     totalOrders: 0,
     recentOrders: [],
     recentSales: []
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
-  // Fetch dashboard statistics
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        setLoading(true)
-        
-        // For now, simulate API calls with mock data
-        // In a production app, you would call the actual endpoints
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock data
-        setStats({
-          totalDesigns: 12,
-          totalProducts: 25,
-          totalOrders: 8,
-          recentOrders: [
-            { id: 1, customer: "John Smith", total: 49.99, status: "SHIPPED", date: "2025-03-08" },
-            { id: 2, customer: "Emily Johnson", total: 75.50, status: "IN_PRODUCTION", date: "2025-03-07" },
-            { id: 3, customer: "Michael Brown", total: 34.99, status: "PAYMENT_RECEIVED", date: "2025-03-06" }
-          ],
-          recentSales: [
-            { date: "2025-03-05", amount: 150 },
-            { date: "2025-03-06", amount: 220 },
-            { date: "2025-03-07", amount: 175 },
-            { date: "2025-03-08", amount: 310 },
-            { date: "2025-03-09", amount: 195 }
-          ]
-        })
+        setLoading(true);
+        const statsData = await dashboardService.getPartnerDashboardStats();
+        setStats(statsData);
       } catch (error) {
-        console.error("Error fetching dashboard stats:", error)
+        console.error("Error fetching dashboard stats:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchDashboardStats()
-  }, [])
+    fetchDashboardStats();
+  }, []);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-100px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -164,7 +132,7 @@ export default function PartnerDashboardHome() {
                   <tr key={order.id}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">#{order.id}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${order.total.toFixed(2)}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${dashboardService.formatCurrency(order.total)}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full
                         ${order.status === 'SHIPPED' ? 'bg-green-100 text-green-800' : 
@@ -173,7 +141,7 @@ export default function PartnerDashboardHome() {
                         {order.status.replace(/_/g, ' ')}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{order.date}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{dashboardService.formatDate(order.date)}</td>
                   </tr>
                 ))}
                 {stats.recentOrders.length === 0 && (
@@ -194,26 +162,35 @@ export default function PartnerDashboardHome() {
             <TrendingUp className="w-5 h-5 text-green-600" />
           </div>
           
-          <div className="h-64 flex items-end space-x-2">
-            {stats.recentSales.map((item, index) => (
-              <div key={index} className="relative flex-1 flex flex-col items-center">
-                <div 
-                  className="w-full bg-purple-500 rounded-t-sm hover:bg-purple-600 transition-colors"
-                  style={{ 
-                    height: `${(item.amount / Math.max(...stats.recentSales.map(s => s.amount))) * 180}px` 
-                  }}
-                ></div>
-                <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left absolute -bottom-6">
-                  {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </div>
-                <div className="text-xs font-medium absolute -top-6">
-                  ${item.amount}
-                </div>
-              </div>
-            ))}
-          </div>
+          {stats.recentSales.length > 0 ? (
+            <div className="h-64 flex items-end space-x-2">
+              {stats.recentSales.map((item, index) => {
+                const maxAmount = Math.max(...stats.recentSales.map(s => s.amount));
+                return (
+                  <div key={index} className="relative flex-1 flex flex-col items-center">
+                    <div 
+                      className="w-full bg-purple-500 rounded-t-sm hover:bg-purple-600 transition-colors"
+                      style={{ 
+                        height: `${(item.amount / maxAmount) * 180}px` 
+                      }}
+                    ></div>
+                    <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left absolute -bottom-6">
+                      {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="text-xs font-medium absolute -top-6">
+                      ${dashboardService.formatCurrency(item.amount)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="h-64 flex items-center justify-center">
+              <p className="text-gray-500">No sales data available</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
+  );
 }

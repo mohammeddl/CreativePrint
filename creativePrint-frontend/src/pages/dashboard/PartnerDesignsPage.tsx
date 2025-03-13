@@ -15,7 +15,7 @@ export default function PartnerDesignsPage() {
   const [selectedDesign, setSelectedDesign] = useState<Design | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Fetch designs from API
+
   useEffect(() => {
     const fetchDesigns = async () => {
       try {

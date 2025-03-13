@@ -30,7 +30,6 @@ export default function PartnerOrdersPage() {
   const [newStatus, setNewStatus] = useState("")
   const [statusNote, setStatusNote] = useState("")
   
-  // Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -73,12 +72,12 @@ export default function PartnerOrdersPage() {
   
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
-    setPage(0) // Reset page when search changes
+    setPage(0) 
   }
   
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterStatus(e.target.value)
-    setPage(0) // Reset page when filter changes
+    setPage(0) 
   }
   
   const openOrderDetails = (order: Order) => {
@@ -123,11 +122,11 @@ export default function PartnerOrdersPage() {
       
       // Add to history
       const newHistoryEntry: OrderStatusHistory = {
-        id: Math.floor(Math.random() * 1000), // Temporary ID
+        id: Math.floor(Math.random() * 1000), 
         orderId: selectedOrder.id,
         status: newStatus,
         notes: statusNote,
-        updatedByName: "You", // Would be set server-side in a real app
+        updatedByName: "You", 
         timestamp: new Date().toISOString()
       }
       

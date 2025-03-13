@@ -1,37 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowLeft, Plus, Trash, Info, Check } from "lucide-react";
+import { ArrowLeft, Info, Check } from "lucide-react";
 import { api } from "../../components/services/api/axios";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import TShirt from "../../../public/assets/images/t-shirt.png";
-
-interface Design {
-  id: number;
-  name: string;
-  designUrl: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface ProductVariant {
-  size: string;
-  color: string;
-  priceAdjustment: number;
-  stock: number;
-}
-
-interface ProductFormData {
-  name: string;
-  description: string;
-  basePrice: number;
-  categoryId: number;
-  designId: number;
-  variants: ProductVariant[];
-}
+import ProductVariants from "../../components/dashboard/ProductVariants"; 
+import { 
+  Design, 
+  Category, 
+  ProductVariantRequest,
+  ProductVariantFormData,
+  ProductFormData
+} from "../../types/product"; 
 
 export default function ProductForm() {
   const navigate = useNavigate();
@@ -64,10 +45,10 @@ export default function ProductForm() {
         setCategories(categoriesResponse.data || []);
         if (!categoriesResponse.data?.length) {
           setCategories([
-            { id: 1, name: "T-shirts" },
-            { id: 2, name: "Posters" },
-            { id: 3, name: "Mugs" },
-            { id: 4, name: "Phone Cases" },
+            { id: 1, name: "T-shirts", description: "Various T-shirts" },
+            { id: 2, name: "Posters", description: "Decorative posters" },
+            { id: 3, name: "Mugs", description: "Custom mugs" },
+            { id: 4, name: "Phone Cases", description: "Phone cases" },
           ]);
         }
 
@@ -77,11 +58,17 @@ export default function ProductForm() {
               id: 1,
               name: "Abstract Design",
               designUrl: "https://via.placeholder.com/300",
+              description: "An abstract design",
+              createdAt: new Date().toISOString(),
+              partnerId: 1,
             },
             {
               id: 2,
               name: "Mountain Landscape",
               designUrl: "https://via.placeholder.com/300",
+              description: "A beautiful mountain landscape",
+              createdAt: new Date().toISOString(),
+              partnerId: 1,
             },
           ]);
         }
@@ -134,7 +121,6 @@ export default function ProductForm() {
             })),
           });
 
-          // Add this additional check for the design
           if (product.design) {
             // Check if the design is already in the designs array
             const designExists = designs.some(
@@ -149,6 +135,9 @@ export default function ProductForm() {
                   id: product.design.id,
                   name: product.design.name,
                   designUrl: product.design.designUrl,
+                  description: product.design.description || "",
+                  createdAt: product.design.createdAt || new Date().toISOString(),
+                  partnerId: product.design.partnerId || 0,
                 },
               ]);
             }
@@ -162,6 +151,7 @@ export default function ProductForm() {
       fetchProduct();
     }
   }, [id, isEditing, navigate, designs]);
+  
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -177,7 +167,6 @@ export default function ProductForm() {
           : value,
     }));
 
-    // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -187,63 +176,11 @@ export default function ProductForm() {
     }
   };
 
-  const handleVariantChange = (
-    index: number,
-    field: keyof ProductVariant,
-    value: string | number
-  ) => {
-    const newVariants = [...formData.variants];
-
-    if (field === "priceAdjustment" || field === "stock") {
-      newVariants[index][field] =
-        typeof value === "string" ? parseFloat(value) : value;
-    } else {
-      newVariants[index][field] = value as string;
-    }
-
-    setFormData((prev) => ({ ...prev, variants: newVariants }));
-
-    // Clear variant errors
-    if (errors[`variants.${index}.${field}`]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[`variants.${index}.${field}`];
-        return newErrors;
-      });
-    }
-  };
-
-  const addVariant = () => {
-    setFormData((prev) => ({
+  const handleVariantsChange = (newVariants: ProductVariantFormData[]) => {
+    setFormData(prev => ({
       ...prev,
-      variants: [
-        ...prev.variants,
-        { size: "", color: "", priceAdjustment: 0, stock: 0 },
-      ],
+      variants: newVariants
     }));
-  };
-
-  const removeVariant = (index: number) => {
-    if (formData.variants.length === 1) {
-      toast.error("You must have at least one variant");
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.filter((_, i) => i !== index),
-    }));
-
-    // Remove any errors for this variant
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      Object.keys(newErrors).forEach((key) => {
-        if (key.startsWith(`variants.${index}`)) {
-          delete newErrors[key];
-        }
-      });
-      return newErrors;
-    });
   };
 
   const validateForm = () => {
@@ -292,22 +229,28 @@ export default function ProductForm() {
     setIsSubmitting(true);
 
     try {
+      // Convert variants to ProductVariantRequest format if needed
+      const variants: ProductVariantRequest[] = formData.variants.map(v => ({
+        size: v.size,
+        color: v.color,
+        priceAdjustment: v.priceAdjustment,
+        stock: v.stock
+      }));
+
       const requestData = {
         name: formData.name,
         description: formData.description,
         basePrice: formData.basePrice,
         categoryId: formData.categoryId,
         designId: formData.designId,
-        variants: formData.variants,
+        variants: variants
       };
 
       if (isEditing) {
         await api.put(`/partner/products/${id}`, requestData);
         Swal.fire({
           title: "Success!",
-          text: isEditing
-            ? "Product updated successfully"
-            : "Product created successfully",
+          text: "Product updated successfully",
           icon: "success",
           confirmButtonColor: "#9333ea",
         });
@@ -315,9 +258,7 @@ export default function ProductForm() {
         await api.post("/partner/products", requestData);
         Swal.fire({
           title: "Success!",
-          text: isEditing
-            ? "Product updated successfully"
-            : "Product created successfully",
+          text: "Product created successfully",
           icon: "success",
           confirmButtonColor: "#9333ea",
         });
@@ -347,10 +288,6 @@ export default function ProductForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const getVariantError = (index: number, field: string) => {
-    return errors[`variants.${index}.${field}`];
   };
 
   const getSelectedDesign = () => {
@@ -574,161 +511,18 @@ export default function ProductForm() {
             </div>
           </div>
 
-          {/* Variants Section */}
-          <div className='pt-4'>
-            <div className='flex justify-between items-center mb-4'>
-              <h3 className='text-lg font-medium text-gray-900'>
-                Product Variants
-              </h3>
-              <button
-                type='button'
-                onClick={addVariant}
-                className='inline-flex items-center px-3 py-1 text-sm bg-green-100 text-green-800 rounded-md hover:bg-green-200'>
-                <Plus className='h-4 w-4 mr-1' />
-                Add Variant
-              </button>
-            </div>
-
-            <div className='bg-gray-50 rounded-lg p-4 space-y-4'>
-              {formData.variants.map((variant, index) => (
-                <div
-                  key={index}
-                  className='bg-white p-4 rounded-md shadow-sm relative'>
-                  <button
-                    type='button'
-                    onClick={() => removeVariant(index)}
-                    className='absolute top-2 right-2 text-red-500 hover:text-red-700'
-                    aria-label='Remove variant'>
-                    <Trash className='h-4 w-4' />
-                  </button>
-
-                  <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-                    <div>
-                      <label
-                        htmlFor={`variant-${index}-size`}
-                        className='block text-xs font-medium text-gray-700 mb-1'>
-                        Size*
-                      </label>
-                      <input
-                        type='text'
-                        id={`variant-${index}-size`}
-                        value={variant.size}
-                        onChange={(e) =>
-                          handleVariantChange(index, "size", e.target.value)
-                        }
-                        className={`block w-full text-sm rounded-md border ${
-                          getVariantError(index, "size")
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        } px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                        placeholder='S, M, L, XL...'
-                      />
-                      {getVariantError(index, "size") && (
-                        <p className='mt-1 text-xs text-red-600'>
-                          {getVariantError(index, "size")}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor={`variant-${index}-color`}
-                        className='block text-xs font-medium text-gray-700 mb-1'>
-                        Color*
-                      </label>
-                      <input
-                        type='text'
-                        id={`variant-${index}-color`}
-                        value={variant.color}
-                        onChange={(e) =>
-                          handleVariantChange(index, "color", e.target.value)
-                        }
-                        className={`block w-full text-sm rounded-md border ${
-                          getVariantError(index, "color")
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        } px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                        placeholder='Black, White, Red...'
-                      />
-                      {getVariantError(index, "color") && (
-                        <p className='mt-1 text-xs text-red-600'>
-                          {getVariantError(index, "color")}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor={`variant-${index}-priceAdjustment`}
-                        className='block text-xs font-medium text-gray-700 mb-1'>
-                        Price Adjustment
-                      </label>
-                      <div className='relative'>
-                        <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                          <span className='text-gray-500'>$</span>
-                        </div>
-                        <input
-                          type='number'
-                          id={`variant-${index}-priceAdjustment`}
-                          value={variant.priceAdjustment}
-                          onChange={(e) =>
-                            handleVariantChange(
-                              index,
-                              "priceAdjustment",
-                              e.target.value
-                            )
-                          }
-                          step='0.01'
-                          className='block w-full text-sm pl-8 rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
-                          placeholder='0.00'
-                        />
-                      </div>
-                      <p className='mt-1 text-xs text-gray-500'>
-                        Additional cost for this variant
-                      </p>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor={`variant-${index}-stock`}
-                        className='block text-xs font-medium text-gray-700 mb-1'>
-                        Stock*
-                      </label>
-                      <input
-                        type='number'
-                        id={`variant-${index}-stock`}
-                        value={variant.stock}
-                        onChange={(e) =>
-                          handleVariantChange(index, "stock", e.target.value)
-                        }
-                        min='0'
-                        className={`block w-full text-sm rounded-md border ${
-                          getVariantError(index, "stock")
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        } px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
-                        placeholder='0'
-                      />
-                      {getVariantError(index, "stock") && (
-                        <p className='mt-1 text-xs text-red-600'>
-                          {getVariantError(index, "stock")}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Display the final price for this variant */}
-                  <div className='mt-2 text-sm text-gray-500'>
-                    Final price: $
-                    {(formData.basePrice + variant.priceAdjustment).toFixed(2)}
-                  </div>
-                </div>
-              ))}
-            </div>
+          {/* Variants Section - Using the new enhanced component */}
+          <div className='mt-8 bg-gray-50 rounded-lg p-6'>
+            <ProductVariants 
+              variants={formData.variants}
+              basePrice={formData.basePrice}
+              onChange={handleVariantsChange}
+              errors={errors}
+            />
           </div>
 
           {/* Info Box */}
-          <div className='bg-blue-50 border border-blue-200 rounded-md p-4 flex'>
+          <div className='bg-blue-50 border border-blue-200 rounded-md p-4 flex mt-6'>
             <Info className='h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5 mr-3' />
             <div className='text-sm text-blue-700'>
               <p className='font-medium mb-1'>Pricing Tips:</p>

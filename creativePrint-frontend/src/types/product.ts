@@ -55,3 +55,26 @@ export interface ProductRequest {
   designId: number
   variants: ProductVariantRequest[]
 }
+
+export interface ProductVariantFormData {
+  size: string;
+  color: string;
+  priceAdjustment: number;
+  stock: number;
+}
+
+export interface ProductVariantsProps {
+  variants: ProductVariantFormData[];
+  basePrice: number;
+  onChange: (variants: ProductVariantFormData[]) => void;
+  errors: { [key: string]: string };
+}
+
+export interface ProductFormData {
+  name: string;
+  description: string;
+  basePrice: number;
+  categoryId: number;
+  designId: number;
+  variants: ProductVariantFormData[];
+}
