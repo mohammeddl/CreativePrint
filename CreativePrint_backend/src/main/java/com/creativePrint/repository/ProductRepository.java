@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
@@ -16,5 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE (p.category.id = :categoryId OR p.design.creator.id = :designerId) AND p.id != :productId")
     List<Product> findSimilarProducts(@Param("categoryId") Long categoryId, @Param("designerId") Long designerId, @Param("productId") Long productId);
     List<Product> findTop5ByOrderByCreatedAtDesc();
+    Optional<Product> findByIdAndDesignCreator(Long productId, User creator);
+
+    long countByDesignCreator(User creator);
 
 }

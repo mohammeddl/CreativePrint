@@ -83,4 +83,13 @@ public class PartnerController {
                 partnerProductService.getPartnerProducts(partner, pageable));
     }
 
+    @GetMapping("/products/{productId}")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<ProductResponse> getProduct(
+            @PathVariable Long productId,
+            @AuthenticationPrincipal User partner) {
+        return ResponseEntity.ok(
+                partnerProductService.getPartnerProduct(productId, partner));
+    }
+
 }

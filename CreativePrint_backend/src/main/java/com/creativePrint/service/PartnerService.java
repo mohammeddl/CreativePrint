@@ -16,6 +16,7 @@ public interface PartnerService {
     ProductResponse updateProduct(Long productId, ProductRequest request, User partner);
     void deleteProduct(Long productId, User partner);
     Page<ProductResponse> getPartnerProducts(User partner, Pageable pageable);
+    ProductResponse getPartnerProduct(Long productId, User partner);
 
     DesignResponse createDesign(com.creativePrint.dto.design.req.DesignRequest request, User partner) throws IOException;
     Page<DesignResponse> getPartnerDesigns(User partner, Pageable pageable);

@@ -14,7 +14,6 @@ export default function PartnerProductsPage() {
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
   
-  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -84,7 +83,7 @@ export default function PartnerProductsPage() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value)
-    setPage(0) // Reset to first page when search changes
+    setPage(0) 
   }
 
   const handleDeleteProduct = async (id: number) => {

@@ -13,4 +13,5 @@ public interface DesignRepository extends JpaRepository<Design, Long> {
     Set<Design> findByCreatorId(Long creatorId);
     Set<Design> findByIdInAndCreator(Set<Long> ids, User creator);
     Page<Design> findByCreator(User creator, Pageable pageable);
+    long countByCreator(User creator);
 }

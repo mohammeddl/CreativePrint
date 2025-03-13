@@ -5,9 +5,8 @@ import PartnerDesignsPage from './PartnerDesignsPage'
 import UploadDesignForm from './UploadDesignForm'
 import PartnerProductsPage from './PartnerProductsPage'
 import ProductForm from './ProductForm'
-import PartnerOrdersPage from './PartnerOrdersPage'
 import TldrawEditor from '../../components/dashboard/TldrawEditor'
- // Import your custom component
+import PartnerOrdersPage from './PartnerOrdersPage'
 
 export default function PartnerDashboard() {
   return (

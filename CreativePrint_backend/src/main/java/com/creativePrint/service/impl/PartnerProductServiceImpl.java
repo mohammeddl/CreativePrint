@@ -195,4 +195,13 @@ public class PartnerProductServiceImpl implements PartnerService {
         return productRepository.findByDesignCreator(partner, pageable)
                 .map(productMapper::toResponse);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponse getPartnerProduct(Long productId, User partner) {
+        Product product = productRepository.findByIdAndDesignCreator(productId, partner)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        return productMapper.toResponse(product);
+    }
 }
