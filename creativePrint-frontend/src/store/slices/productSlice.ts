@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
 import type { Product, ProductsState } from "../../types/product"
+import { productService } from "../../components/services/api/product.service"
 
 const initialState: ProductsState = {
   items: [],
@@ -8,64 +9,18 @@ const initialState: ProductsState = {
   error: null,
   categories: [],
   selectedCategory: null,
+  currentPage: 0,
+  totalPages: 0,
+  totalItems: 0
 }
 
-export const fetchProducts = createAsyncThunk("products/fetchProducts", async () => {
-  // TODO: Replace with actual API call
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return [
-    {
-      id: "1",
-      name: "T-Shirt",
-      description: "Comfortable cotton t-shirt",
-      price: 19.99,
-      image: "/placeholder.svg",
-      category: "Clothing",
-      isHot: true,
-      stock: 100,
-    },
-    {
-      id: "2",
-      name: "Mug",
-      description: "Ceramic mug for your favorite drink",
-      price: 9.99,
-      image: "/placeholder.svg",
-      category: "Accessories",
-      isHot: false,
-      stock: 50,
-    },
-    {
-      id: "3",
-      name: "Poster",
-      description: "High-quality print poster",
-      price: 24.99,
-      image: "/placeholder.svg",
-      category: "Home Decor",
-      isHot: true,
-      stock: 75,
-    },
-    {
-      id: "4",
-      name: "Hoodie",
-      description: "Warm and cozy hoodie",
-      price: 39.99,
-      image: "/placeholder.svg",
-      category: "Clothing",
-      isHot: false,
-      stock: 60,
-    },
-    {
-      id: "5",
-      name: "Phone Case",
-      description: "Durable phone case",
-      price: 14.99,
-      image: "/placeholder.svg",
-      category: "Accessories",
-      isHot: true,
-      stock: 200,
-    },
-  ] as Product[]
-})
+export const fetchProducts = createAsyncThunk(
+  "products/fetchProducts", 
+  async ({ page = 0, category = null }: { page?: number, category?: string | null }) => {
+    const response = await productService.getProductsCatalog(page, 12, category);
+    return response;
+  }
+)
 
 const productSlice = createSlice({
   name: "products",
@@ -73,9 +28,10 @@ const productSlice = createSlice({
   reducers: {
     setSelectedCategory: (state, action: PayloadAction<string | null>) => {
       state.selectedCategory = action.payload
-      state.filteredItems = action.payload
-        ? state.items.filter((item) => item.category === action.payload)
-        : state.items
+      state.currentPage = 0 // Reset to first page when changing category
+    },
+    setCurrentPage: (state, action: PayloadAction<number>) => {
+      state.currentPage = action.payload
     },
     // Add a new product (for admin functionality)
     addProduct: (state, action: PayloadAction<Product>) => {
@@ -108,9 +64,12 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false
-        state.items = action.payload
-        state.filteredItems = action.payload
-        state.categories = Array.from(new Set(action.payload.map((item) => item.category)))
+        state.items = action.payload.products
+        state.filteredItems = action.payload.products
+        state.categories = action.payload.categories
+        state.totalPages = action.payload.totalPages
+        state.totalItems = action.payload.totalItems
+        state.currentPage = action.payload.currentPage
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.loading = false
@@ -119,7 +78,13 @@ const productSlice = createSlice({
   },
 })
 
-export const { setSelectedCategory, addProduct, updateProduct, removeProduct, updateStock } = productSlice.actions
+export const { 
+  setSelectedCategory, 
+  setCurrentPage,
+  addProduct, 
+  updateProduct, 
+  removeProduct, 
+  updateStock 
+} = productSlice.actions
 
 export default productSlice.reducer
-

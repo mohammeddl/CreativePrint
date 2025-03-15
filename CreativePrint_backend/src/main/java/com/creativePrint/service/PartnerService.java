@@ -18,6 +18,8 @@ public interface PartnerService {
     Page<ProductResponse> getPartnerProducts(User partner, Pageable pageable);
     ProductResponse getPartnerProduct(Long productId, User partner);
 
+    Page<ProductResponse> getAllProducts(Pageable pageable ,String search);
+
     DesignResponse createDesign(com.creativePrint.dto.design.req.DesignRequest request, User partner) throws IOException;
     Page<DesignResponse> getPartnerDesigns(User partner, Pageable pageable);
 

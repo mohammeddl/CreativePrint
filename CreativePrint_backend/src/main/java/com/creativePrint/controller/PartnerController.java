@@ -92,4 +92,15 @@ public class PartnerController {
                 partnerProductService.getPartnerProduct(productId, partner));
     }
 
+    @GetMapping("/products/all")
+    @PreAuthorize("hasAnyRole('CLIENT', 'PARTNER')")
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam(required = false) String search
+    ) {
+        return ResponseEntity.ok(
+                partnerProductService.getAllProducts(pageable, search)
+        );
+    }
+
 }

@@ -1,5 +1,6 @@
+// src/components/layout/Header.tsx
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { ShoppingCart, Menu, X, Home, Phone, Info, ChevronDown, LogOut, User as UserIcon } from "lucide-react"
 import { logoutUser } from "../../store/slices/userSlice"
@@ -11,6 +12,7 @@ export default function Header() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const cartItemsCount = useSelector((state: RootState) => state.cart.items.length)
   const { currentUser, isAuthenticated, role } = useSelector((state: RootState) => state.user)
   const { profile } = useSelector((state: RootState) => state.userProfile)
@@ -89,7 +91,7 @@ export default function Header() {
     <header className="bg-white dark:bg-gray-800 shadow-lg">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center">
+        <Link to={isAuthenticated && userRole === "CLIENT" ? "/home" : "/"} className="flex items-center">
           <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-500 text-transparent bg-clip-text">
             PrintOnDemand
           </span>
@@ -109,7 +111,11 @@ export default function Header() {
             <Link 
               key={item.label}
               to={item.path} 
-              className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition-colors"
+              className={`flex items-center px-4 py-2 rounded-lg ${
+                location.pathname === item.path 
+                  ? "bg-purple-100 text-purple-700" 
+                  : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+              } transition-colors`}
             >
               <item.icon size={18} className="mr-2" />
               {item.label}
@@ -119,7 +125,11 @@ export default function Header() {
           {userRole === "CLIENT" && (
             <Link 
               to="/cart" 
-              className="relative p-2 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition-colors"
+              className={`relative p-2 rounded-lg ${
+                location.pathname === "/cart"
+                  ? "bg-purple-100 text-purple-700"
+                  : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+              } transition-colors`}
             >
               <ShoppingCart size={22} />
               {cartItemsCount > 0 && (
@@ -130,6 +140,24 @@ export default function Header() {
             </Link>
           )}
         </nav>
+        
+        {/* Auth buttons for logged-out users */}
+        {!isAuthenticated && (
+          <div className="hidden md:flex items-center space-x-3">
+            <Link 
+              to="/login" 
+              className="px-4 py-2 text-purple-600 hover:text-purple-800 transition-colors"
+            >
+              Log In
+            </Link>
+            <Link 
+              to="/register" 
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Register
+            </Link>
+          </div>
+        )}
         
         {/* Profile section */}
         {isAuthenticated && (
@@ -230,7 +258,11 @@ export default function Header() {
                     <li key={item.label}>
                       <Link 
                         to={item.path} 
-                        className="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+                        className={`flex items-center py-3 px-4 rounded-lg ${
+                          location.pathname === item.path 
+                            ? "bg-purple-100 text-purple-700" 
+                            : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+                        }`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <item.icon size={18} className="mr-3" />
@@ -243,7 +275,11 @@ export default function Header() {
                     <li>
                       <Link 
                         to="/cart" 
-                        className="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+                        className={`flex items-center py-3 px-4 rounded-lg ${
+                          location.pathname === "/cart"
+                            ? "bg-purple-100 text-purple-700"
+                            : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+                        }`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         <ShoppingCart size={18} className="mr-3" />
@@ -258,7 +294,24 @@ export default function Header() {
                   )}
                 </ul>
                 
-                {isAuthenticated && (
+                {!isAuthenticated ? (
+                  <div className="mt-6 pt-6 border-t grid grid-cols-2 gap-3">
+                    <Link
+                      to="/login"
+                      className="flex items-center justify-center py-2 px-4 border border-purple-600 text-purple-600 rounded-lg hover:bg-purple-50"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="flex items-center justify-center py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Register
+                    </Link>
+                  </div>
+                ) : (
                   <div className="mt-6 pt-6 border-t">
                     <Link
                       to="/profile"

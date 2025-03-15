@@ -1,21 +1,26 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { motion, AnimatePresence } from "framer-motion"
 import { ChevronDown, ChevronUp, Search, X } from "lucide-react"
 import { setSelectedCategory } from "../../store/slices/productSlice"
 import type { RootState } from "../../store/store"
+import { AppDispatch } from "../../store/store"
 
 export default function FilterSidebar() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const { categories, selectedCategory } = useSelector((state: RootState) => state.products)
   const [isOpen, setIsOpen] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filteredCategories, setFilteredCategories] = useState(categories)
+  const [filteredCategories, setFilteredCategories] = useState<string[]>(categories)
 
   useEffect(() => {
-    setFilteredCategories(categories.filter((category) => category.toLowerCase().includes(searchTerm.toLowerCase())))
+    if (categories && categories.length > 0) {
+      setFilteredCategories(
+        categories.filter((category) => 
+          category.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      )
+    }
   }, [categories, searchTerm])
 
   const handleCategoryChange = (category: string | null) => {
@@ -97,4 +102,3 @@ export default function FilterSidebar() {
     </div>
   )
 }
-

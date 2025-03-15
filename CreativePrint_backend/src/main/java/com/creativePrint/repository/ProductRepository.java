@@ -19,6 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findTop5ByOrderByCreatedAtDesc();
     Optional<Product> findByIdAndDesignCreator(Long productId, User creator);
 
+    Page<Product> findByNameContainingIgnoreCase(String search, Pageable pageable);
     long countByDesignCreator(User creator);
 
 }

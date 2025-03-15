@@ -35,16 +35,25 @@ export interface Category {
   description: string
 }
 
+// Extended Product interface that can handle both backend formats
 export interface Product {
-  id: number
+  id: number | string
   name: string
   description: string
-  basePrice: number
-  category: Category
-  design: Design
-  variants: ProductVariant[]
-  createdAt: string
-  updatedAt: string
+  // basePrice for partner products, price for catalog products
+  basePrice?: number
+  price?: number
+  category: Category | string
+  // Design is required for partner products
+  design?: Design
+  // Image URL for catalog products
+  image?: string
+  variants?: ProductVariant[]
+  createdAt?: string
+  updatedAt?: string
+  // For catalog display
+  isHot?: boolean
+  stock?: number
 }
 
 export interface ProductRequest {
@@ -77,4 +86,25 @@ export interface ProductFormData {
   categoryId: number;
   designId: number;
   variants: ProductVariantFormData[];
+}
+
+// New interface for catalog-specific product response
+export interface ProductsResponse {
+  products: Product[];
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  categories: string[];
+}
+
+export interface ProductsState {
+  items: Product[];
+  filteredItems: Product[];
+  loading: boolean;
+  error: string | null;
+  categories: string[];
+  selectedCategory: string | null;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
 }
