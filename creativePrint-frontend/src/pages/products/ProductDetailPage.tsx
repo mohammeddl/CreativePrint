@@ -7,6 +7,7 @@ import { addToCart } from '../../store/slices/cartSlice'
 import { productService } from '../../components/services/api/product.service'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
+import RelatedProducts from '../../components/products/RelatedProducts'
 import type { Product } from '../../types/product'
 
 export default function ProductDetailPage() {
@@ -89,17 +90,16 @@ export default function ProductDetailPage() {
     )
   }
 
-
+ 
   const productName = product.name
   const productDescription = product.description
   const productImage = product.image || 
                       (product.design?.designUrl) || 
                       "/placeholder.svg"
   
-
+ 
   const productPrice = product.price || product.basePrice || 0
   
-
   const categoryName = typeof product.category === 'string' 
                       ? product.category 
                       : product.category?.name || ''
@@ -118,22 +118,34 @@ export default function ProductDetailPage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
           <div className="md:flex">
-            {/* Product Image */}
+            {/* Product Image with Mockup */}
             <motion.div 
               className="md:w-1/2"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <img
-                src={productImage}
-                alt={productName}
-                className="w-full h-full object-cover object-center"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder.svg";
-                }}
-              />
+              <div className="relative h-full bg-gray-100">
+                {/* T-shirt mockup base image */}
+                <img
+                  src="../../../public/assets/images/t-shirt.png"
+                  alt="T-shirt mockup"
+                  className="w-full h-full object-contain"
+                />
+                
+                {/* Design overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img
+                    src={productImage}
+                    alt={productName}
+                    className="w-1/3 max-h-72 object-contain mix-blend-normal"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
+                  />
+                </div>
+              </div>
             </motion.div>
 
             {/* Product Details */}
@@ -225,6 +237,12 @@ export default function ProductDetailPage() {
             </motion.div>
           </div>
         </div>
+        
+        {/* Related Products Section */}
+        <RelatedProducts 
+          currentProductId={productId || ""} 
+          categoryName={categoryName} 
+        />
       </main>
       <Footer />
     </div>
