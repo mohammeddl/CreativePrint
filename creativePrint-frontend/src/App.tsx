@@ -12,6 +12,10 @@ import LoginForm from "./components/auth/loginForm/LoginForm";
 import RegisterForm from "./components/auth/registerForm/RegisterFrom";
 import UnauthorizedPage from "./pages/unauthorized/UnauthorizedPage";
 import ProductDetailPage from "./pages/products/ProductDetailPage";
+import ShoppingCartPage from "./pages/Cart/ShoppingCartPage";
+import PaymentSuccessPage from "./pages/Cart/PaymentSuccessPage";
+import OrderDetailPage from "./pages/orders/OrderDetailPage";
+import OrderHistoryPage from "./pages/orders/OrderHistoryPage";
 
 function App() {
   return (
@@ -43,6 +47,38 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
                 <ProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/cart'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <ShoppingCartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/payment/success'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <PaymentSuccessPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/orders'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <OrderHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/orders/:orderId'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <OrderDetailPage />
               </ProtectedRoute>
             }
           />
