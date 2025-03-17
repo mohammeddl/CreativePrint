@@ -12,12 +12,16 @@ import LoginForm from "./components/auth/loginForm/LoginForm";
 import RegisterForm from "./components/auth/registerForm/RegisterFrom";
 import UnauthorizedPage from "./pages/unauthorized/UnauthorizedPage";
 import ProductDetailPage from "./pages/products/ProductDetailPage";
+import ShoppingCartSlideOver from "./components/cart/ShoppingCartSlideOver";
+import CartPage from "./pages/Cart/CartPage";
+import OrderConfirmationPage from "./pages/Cart/OrderConfirmationPage";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
         <Toaster position='top-right' />
+        <ShoppingCartSlideOver /> {/* Shopping cart slide-over component */}
         <Routes>
           <Route path='/login' element={<LoginForm />} />
           <Route path='/register' element={<RegisterForm />} />
@@ -43,6 +47,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
                 <ProductDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/cart'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/order-confirmation'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <OrderConfirmationPage />
               </ProtectedRoute>
             }
           />

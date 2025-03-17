@@ -1,9 +1,9 @@
-// src/components/layout/Header.tsx
 import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { ShoppingCart, Menu, X, Home, Phone, Info, ChevronDown, LogOut, User as UserIcon } from "lucide-react"
 import { logoutUser } from "../../store/slices/userSlice"
+import { openCart } from "../../store/slices/cartSlice" 
 import type { RootState } from "../../store/store"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -87,6 +87,11 @@ export default function Header() {
   
   const menuItems = getMenuItems();
 
+  // Handle cart click
+  const handleCartClick = () => {
+    dispatch(openCart());
+  };
+
   return (
     <header className="bg-white dark:bg-gray-800 shadow-lg">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -123,21 +128,27 @@ export default function Header() {
           ))}
           
           {userRole === "CLIENT" && (
-            <Link 
-              to="/cart" 
+            <button 
+              onClick={handleCartClick} 
               className={`relative p-2 rounded-lg ${
                 location.pathname === "/cart"
                   ? "bg-purple-100 text-purple-700"
                   : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
               } transition-colors`}
+              aria-label="Shopping cart"
             >
               <ShoppingCart size={22} />
               {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                <motion.span 
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
                   {cartItemsCount}
-                </span>
+                </motion.span>
               )}
-            </Link>
+            </button>
           )}
         </nav>
         
@@ -273,14 +284,12 @@ export default function Header() {
                   
                   {userRole === "CLIENT" && (
                     <li>
-                      <Link 
-                        to="/cart" 
-                        className={`flex items-center py-3 px-4 rounded-lg ${
-                          location.pathname === "/cart"
-                            ? "bg-purple-100 text-purple-700"
-                            : "text-gray-700 hover:bg-purple-100 hover:text-purple-700"
-                        }`}
-                        onClick={() => setIsMenuOpen(false)}
+                      <button 
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          handleCartClick();
+                        }}
+                        className={`flex items-center w-full py-3 px-4 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700`}
                       >
                         <ShoppingCart size={18} className="mr-3" />
                         Cart
@@ -289,7 +298,7 @@ export default function Header() {
                             {cartItemsCount}
                           </span>
                         )}
-                      </Link>
+                      </button>
                     </li>
                   )}
                 </ul>
