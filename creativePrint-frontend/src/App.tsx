@@ -12,16 +12,16 @@ import LoginForm from "./components/auth/loginForm/LoginForm";
 import RegisterForm from "./components/auth/registerForm/RegisterFrom";
 import UnauthorizedPage from "./pages/unauthorized/UnauthorizedPage";
 import ProductDetailPage from "./pages/products/ProductDetailPage";
-import ShoppingCartPage from "./pages/Cart/ShoppingCartPage";
-import PaymentSuccessPage from "./pages/Cart/PaymentSuccessPage";
-import OrderDetailPage from "./pages/orders/OrderDetailPage";
-import OrderHistoryPage from "./pages/orders/OrderHistoryPage";
+import ShoppingCartSlideOver from "./components/cart/ShoppingCartSlideOver";
+import CartPage from "./pages/Cart/CartPage";
+import OrderConfirmationPage from "./pages/Cart/OrderConfirmationPage";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
         <Toaster position='top-right' />
+        <ShoppingCartSlideOver /> {/* Shopping cart slide-over component */}
         <Routes>
           <Route path='/login' element={<LoginForm />} />
           <Route path='/register' element={<RegisterForm />} />
@@ -54,31 +54,15 @@ function App() {
             path='/cart'
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
-                <ShoppingCartPage />
+                <CartPage />
               </ProtectedRoute>
             }
           />
           <Route
-            path='/payment/success'
+            path='/order-confirmation'
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
-                <PaymentSuccessPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/orders'
-            element={
-              <ProtectedRoute allowedRoles={["CLIENT"]}>
-                <OrderHistoryPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path='/orders/:orderId'
-            element={
-              <ProtectedRoute allowedRoles={["CLIENT"]}>
-                <OrderDetailPage />
+                <OrderConfirmationPage />
               </ProtectedRoute>
             }
           />
