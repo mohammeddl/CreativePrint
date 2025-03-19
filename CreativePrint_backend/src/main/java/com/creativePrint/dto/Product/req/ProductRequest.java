@@ -12,5 +12,5 @@ public record ProductRequest(
     Double basePrice,
     Long categoryId, 
     Long designId,  
-    List<ProductVariantRequest> variants
+    List<com.creativePrint.dto.product.req.ProductVariantRequest> variants
 ) {}
