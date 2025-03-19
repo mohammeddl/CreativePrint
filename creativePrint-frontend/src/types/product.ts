@@ -6,7 +6,16 @@ export interface ProductVariant {
   stock: number
   product?: Product 
 }
-
+export interface ProductWithVariants {
+  id: number | string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  isHot: boolean;
+  variants: ProductVariant[];
+}
 export interface ProductVariantRequest {
   size: string
   color: string
