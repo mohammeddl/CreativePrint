@@ -90,12 +90,12 @@ const ShoppingCartSlideOver: React.FC = () => {
                           <li key={item.product.id} className="flex py-6">
                             <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                               <img
-                                src={item.product.image || "/placeholder.svg"}
+                                src={item.product.image || "../../../public/assets/images/default-avatar.png"}
                                 alt={item.product.name}
                                 className="h-full w-full object-cover object-center"
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
-                                  target.src = "/placeholder.svg";
+                                  target.src = "../../../public/assets/images/default-avatar.png";
                                 }}
                               />
                             </div>

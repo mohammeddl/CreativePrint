@@ -24,7 +24,7 @@ export const paymentService = {
     try {
       const response = await api.post('/payments/paypal/create', request);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating PayPal payment:', error);
       throw error;
     }
@@ -34,7 +34,7 @@ export const paymentService = {
     try {
       const response = await api.get(`/payments/paypal/execute?paymentId=${paymentId}&PayerID=${payerId}`);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error executing PayPal payment:', error);
       throw error;
     }
@@ -44,8 +44,19 @@ export const paymentService = {
     try {
       const response = await api.get(`/payments/order/${orderId}`);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting payment by order ID:', error);
+      throw error;
+    }
+  },
+  
+  // Check if payment was successful by order ID
+  checkPaymentStatus: async (orderId: number): Promise<string> => {
+    try {
+      const response = await api.get(`/payments/order/${orderId}`);
+      return response.data.status;
+    } catch (error: any) {
+      console.error('Error checking payment status:', error);
       throw error;
     }
   }

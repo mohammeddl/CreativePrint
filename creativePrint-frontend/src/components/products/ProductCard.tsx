@@ -16,7 +16,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   const productName = product.name
   const productDescription = product.description
   
-  const designImage = product.design?.designUrl || product.image || "/placeholder.svg"
+  const designImage = product.design?.designUrl || product.image || "../../../public/assets/images/default-avatar.png"
   
   const mockupImage = "../../../public/assets/images/t-shirt.png" 
   
@@ -58,7 +58,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
                 className="w-1/3 h-auto object-contain max-h-32 mix-blend-normal" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = "/placeholder.svg";
+                  target.src = "../../../public/assets/images/default-avatar.png";
                 }}
               />
             </div>
@@ -116,7 +116,7 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
               className="w-1/3 h-auto object-contain max-h-48 mix-blend-normal" 
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = "/placeholder.svg";
+                target.src = "../../../public/assets/images/default-avatar.png";
               }}
             />
           </div>

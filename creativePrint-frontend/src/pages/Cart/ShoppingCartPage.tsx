@@ -146,12 +146,12 @@ export default function ShoppingCartPage() {
                       <li key={item.product.id} className="py-6 flex">
                         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                           <img
-                            src={item.product.image || item.product.design?.designUrl || "/placeholder.svg"}
+                            src={item.product.image || item.product.design?.designUrl || "../../../public/assets/images/default-avatar.png"}
                             alt={item.product.name}
                             className="h-full w-full object-cover object-center"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = "/placeholder.svg";
+                              target.src = "../../../public/assets/images/default-avatar.png";
                             }}
                           />
                         </div>

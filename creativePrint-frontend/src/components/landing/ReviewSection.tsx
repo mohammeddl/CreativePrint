@@ -64,7 +64,7 @@ export default function ReviewSection() {
             >
               <div className="flex items-center mb-4">
                 <img
-                  src={review.image || "/placeholder.svg"}
+                  src={review.image || "../../../public/assets/images/default-avatar.png"}
                   alt={review.name}
                   className="w-12 h-12 rounded-full object-cover mr-4"
                 />

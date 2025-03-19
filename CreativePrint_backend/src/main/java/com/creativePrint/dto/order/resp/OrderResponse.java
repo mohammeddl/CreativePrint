@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.creativePrint.dto.resp.UserResponse;
 import com.creativePrint.enums.OrderStatus;
+import com.creativePrint.dto.design.resp.DesignResponse;
 
 public record OrderResponse(
     Long id,
@@ -13,4 +14,5 @@ public record OrderResponse(
     Double totalPrice,
     OrderStatus status,
     Instant createdAt
+    
 ) {}

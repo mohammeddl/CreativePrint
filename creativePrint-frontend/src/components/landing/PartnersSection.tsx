@@ -38,7 +38,7 @@ export default function PartnersSection() {
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <img className="h-12" src={partner.logo || "/placeholder.svg"} alt={partner.name} />
+              <img className="h-12" src={partner.logo || "../../../public/assets/images/default-avatar.png"} alt={partner.name} />
             </motion.div>
           ))}
         </motion.div>

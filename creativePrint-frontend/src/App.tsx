@@ -15,6 +15,8 @@ import ProductDetailPage from "./pages/products/ProductDetailPage";
 import ShoppingCartSlideOver from "./components/cart/ShoppingCartSlideOver";
 import CartPage from "./pages/Cart/CartPage";
 import OrderConfirmationPage from "./pages/Cart/OrderConfirmationPage";
+import OrderHistoryPage from "./pages/orders/OrderHistoryPage";
+import OrderDetailPage from "./pages/orders/OrderDetailPage";
 
 function App() {
   return (
@@ -63,6 +65,23 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
                 <OrderConfirmationPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Order Routes */}
+          <Route
+            path='/orders/history'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <OrderHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/orders/:orderId'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <OrderDetailPage />
               </ProtectedRoute>
             }
           />

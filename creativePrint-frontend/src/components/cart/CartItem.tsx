@@ -23,7 +23,7 @@ export default function CartItem({ item }: CartItemProps) {
   return (
     <div className="flex items-center gap-4 py-4 border-b">
       <img
-        src={item.product.image || "/placeholder.svg"}
+        src={item.product.image || "../../../public/assets/images/default-avatar.png"}
         alt={item.product.name}
         className="w-20 h-20 object-cover rounded-lg"
       />
