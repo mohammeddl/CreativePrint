@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
-import { ShoppingCart, Menu, X, Home, Phone, Info, ChevronDown, LogOut, User as UserIcon } from "lucide-react"
+import { ShoppingCart, Menu, X, Home, Phone, Info, ChevronDown, LogOut, User as UserIcon, ShoppingBag } from "lucide-react"
 import { logoutUser } from "../../store/slices/userSlice"
 import { openCart } from "../../store/slices/cartSlice" 
 import type { RootState } from "../../store/store"
@@ -17,15 +17,14 @@ export default function Header() {
   const { currentUser, isAuthenticated, role } = useSelector((state: RootState) => state.user)
   const { profile } = useSelector((state: RootState) => state.userProfile)
   
-  // Get avatar URL, falling back to local storage if needed
-  const [avatarUrl, setAvatarUrl] = useState<string>('/default-avatar.png')
+  const [avatarUrl, setAvatarUrl] = useState<string>('../../../public/assets/images/default-avatar.png')
   
   // Update avatar when profile changes
   useEffect(() => {
     if (profile?.profilePicture) {
       setAvatarUrl(profile.profilePicture)
     } else {
-      setAvatarUrl('/default-avatar.png')
+      setAvatarUrl('../../../public/assets/images/default-avatar.png')
     }
   }, [profile])
   
@@ -70,6 +69,7 @@ export default function Header() {
     if (userRole === "CLIENT") {
       return [
         { label: "Home", icon: Home, path: "/home" },
+        { label: "My Orders", icon: ShoppingBag, path: "/orders/history" },
         ...commonItems
       ];
     } else if (userRole === "PARTNER") {
@@ -183,7 +183,7 @@ export default function Header() {
                   alt="Profile" 
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                    (e.target as HTMLImageElement).src = '../../../public/assets/images/default-avatar.png';
                   }}
                 />
               </div>
@@ -211,6 +211,16 @@ export default function Header() {
                     <UserIcon size={16} className="mr-2" />
                     My Profile
                   </Link>
+                  {userRole === "CLIENT" && (
+                    <Link
+                      to="/orders/history"
+                      className="flex items-center px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-700"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <ShoppingBag size={16} className="mr-2" />
+                      My Orders
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full text-left px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-700"
@@ -252,7 +262,7 @@ export default function Header() {
                       alt="Profile" 
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/default-avatar.png';
+                        (e.target as HTMLImageElement).src = '../../../public/assets/images/default-avatar.png';
                       }}
                     />
                   </div>
@@ -330,6 +340,16 @@ export default function Header() {
                       <UserIcon size={18} className="mr-3" />
                       My Profile
                     </Link>
+                    {userRole === "CLIENT" && (
+                      <Link
+                        to="/orders/history"
+                        className="flex items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <ShoppingBag size={18} className="mr-3" />
+                        My Orders
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="flex items-center w-full text-left py-3 px-4 rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700"

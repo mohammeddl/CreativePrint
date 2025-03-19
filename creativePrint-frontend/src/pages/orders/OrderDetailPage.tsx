@@ -77,6 +77,7 @@ export default function OrderDetailPage() {
         // Fetch order details
         const orderResponse = await api.get(`/orders/${orderId}`);
         setOrder(orderResponse.data);
+        console.log("Order details:", orderResponse.data);
         
         // Fetch order status history
         const historyResponse = await api.get(`/orders/${orderId}/status-history`);
@@ -246,12 +247,12 @@ export default function OrderDetailPage() {
                   <li key={item.id} className="p-6 flex">
                     <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                       <img
-                        src={item.variant.product?.design?.designUrl || "/placeholder.svg"}
+                        src={item.design.designUrl || "../../../public/assets/images/default-avatar.png"}
                         alt={item.variant.product?.name || "Product"}
                         className="h-full w-full object-cover object-center"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = "/placeholder.svg";
+                          target.src = "../../../public/assets/images/default-avatar.png";
                         }}
                       />
                     </div>

@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
   const productDescription = product.description
   const productImage = product.image || 
                       (product.design?.designUrl) || 
-                      "/placeholder.svg"
+                      "../../../public/assets/images/default-avatar.png"
   
  
   const productPrice = product.price || product.basePrice || 0
@@ -141,7 +141,7 @@ export default function ProductDetailPage() {
                     className="w-1/3 max-h-72 object-contain mix-blend-normal"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg";
+                      target.src = "../../../public/assets/images/default-avatar.png";
                     }}
                   />
                 </div>

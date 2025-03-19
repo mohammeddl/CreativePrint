@@ -25,7 +25,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 }) => {
   // Get profile picture from the profile state
   const { profile } = useSelector((state: RootState) => state.userProfile)
-  const [avatarUrl, setAvatarUrl] = useState('/default-avatar.png')
+  const [avatarUrl, setAvatarUrl] = useState('../../../public/assets/images/default-avatar.png')
 
   // Update avatar URL when profile or preview changes
   useEffect(() => {
@@ -34,7 +34,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     } else if (profile?.profilePicture) {
       setAvatarUrl(profile.profilePicture)
     } else {
-      setAvatarUrl(user.avatar || '/default-avatar.png')
+      setAvatarUrl(user.avatar || '../../../public/assets/images/default-avatar.png')
     }
   }, [previewImage, profile, user])
 
@@ -48,7 +48,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 src={avatarUrl} 
                 alt="Profile" 
                 className="w-full h-full object-cover"
-                onError={() => setAvatarUrl('/default-avatar.png')}
+                onError={() => setAvatarUrl('../../../public/assets/images/default-avatar.png')}
               />
               {isEditing && (
                 <label className="absolute bottom-0 right-0 bg-purple-500 text-white p-2 rounded-full cursor-pointer">
