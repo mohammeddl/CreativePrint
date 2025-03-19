@@ -13,7 +13,7 @@ public record ProductResponse(
     Double basePrice,
     CategoryResponse category,
     DesignResponse design,
-    List<ProductVariantResponse> variants,
+    List<com.creativePrint.dto.product.resp.ProductVariantResponse> variants,
     Instant createdAt,
     Instant updatedAt
 ) {}

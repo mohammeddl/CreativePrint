@@ -1,10 +1,15 @@
 package com.creativePrint.service.impl;
 
+import com.creativePrint.dto.Product.resp.ProductDetailWithVariantsDTO;
+import com.creativePrint.dto.Product.resp.ProductVariantDTO;
+import com.creativePrint.dto.category.CategoryResponse;
+//import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
 import com.creativePrint.dto.product.resp.ProductListResponse;
-import com.creativePrint.dto.product.resp.ProductListResponse.ProductDTO;
+//import com.creativePrint.dto.product.resp.ProductVariantDTO;
 import com.creativePrint.exception.entitesCustomExceptions.ResourceNotFoundException;
 import com.creativePrint.model.Categories;
 import com.creativePrint.model.Product;
+import com.creativePrint.model.ProductVariant;
 import com.creativePrint.repository.CategoriesRepository;
 import com.creativePrint.repository.ProductRepository;
 import com.creativePrint.service.ProductCatalogService;
@@ -42,7 +47,7 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         }
 
         // Convert entities to DTOs
-        List<ProductDTO> productDTOs = productsPage.getContent().stream()
+        List<ProductListResponse.ProductDTO> productDTOs = productsPage.getContent().stream()
                 .map(this::enhanceProductDTO)
                 .collect(Collectors.toList());
 
@@ -62,24 +67,57 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProductDTO getProductDetails(Long productId) {
+    public ProductListResponse.ProductDTO getProductDetails(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
 
         return enhanceProductDTO(product);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ProductDetailWithVariantsDTO getProductDetailsWithVariants(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+
+        // Convert product variants to DTOs
+        List<ProductVariantDTO> variantDTOs = product.getVariants().stream()
+                .map(this::mapToVariantDTO)
+                .collect(Collectors.toList());
+
+        return new ProductDetailWithVariantsDTO(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getBasePrice(),
+                product.getDesign().getDesignUrl(), // Use design image URL
+                product.getCategory().getName(),
+                isProductHot(product),
+                variantDTOs
+        );
+    }
+
+    private ProductVariantDTO mapToVariantDTO(ProductVariant variant) {
+        return new ProductVariantDTO(
+                variant.getId(),
+                variant.getSize(),
+                variant.getColor(),
+                variant.getPriceAdjustment(),
+                variant.getStock()
+        );
+    }
+
     /**
      * Adds additional fields to the basic DTO conversion
      */
-    private ProductDTO enhanceProductDTO(Product product) {
-        ProductDTO dto = ProductDTO.fromEntity(product);
+    private ProductListResponse.ProductDTO enhanceProductDTO(Product product) {
+        ProductListResponse.ProductDTO dto = ProductListResponse.ProductDTO.fromEntity(product);
 
         // Logic to determine if a product is "hot" - for example, new products or products with high sales
         boolean isHot = isProductHot(product);
 
         // Create a new DTO with the isHot flag set
-        return new ProductDTO(
+        return new ProductListResponse.ProductDTO(
                 dto.id(),
                 dto.name(),
                 dto.description(),

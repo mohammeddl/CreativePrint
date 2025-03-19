@@ -1,5 +1,6 @@
 package com.creativePrint.controller;
 
+import com.creativePrint.dto.Product.resp.ProductDetailWithVariantsDTO;
 import com.creativePrint.dto.product.resp.ProductListResponse;
 import com.creativePrint.service.ProductCatalogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,5 +29,11 @@ public class ProductCatalogController {
     @Operation(summary = "Get detailed product information by ID")
     public ResponseEntity<ProductListResponse.ProductDTO> getProductDetails(@PathVariable Long productId) {
         return ResponseEntity.ok(productCatalogService.getProductDetails(productId));
+    }
+
+    @GetMapping("/{productId}/with-variants")
+    @Operation(summary = "Get detailed product information by ID")
+    public ResponseEntity<ProductDetailWithVariantsDTO> getProductDetailsWithVariants(@PathVariable Long productId) {
+        return ResponseEntity.ok(productCatalogService.getProductDetailWithVariants(productId));
     }
 }
