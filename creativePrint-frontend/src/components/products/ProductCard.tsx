@@ -139,11 +139,6 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
           {categoryName}
         </p>
-        
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-2">
-          {productDescription}
-        </p>
-        
         <div className="flex items-center justify-between">
           <span className="text-xl font-bold text-gray-900 dark:text-white">
             ${productPrice.toFixed(2)}

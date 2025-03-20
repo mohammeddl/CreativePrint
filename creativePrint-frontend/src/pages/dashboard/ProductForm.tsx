@@ -5,6 +5,8 @@ import { api } from "../../components/services/api/axios";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import TShirt from "../../../public/assets/images/t-shirt.png";
+import Hat from "../../../public/assets/images/hat.png";
+import Mug from "../../../public/assets/images/mugs.png"; 
 import ProductVariants from "../../components/dashboard/ProductVariants"; 
 import { 
   Design, 
@@ -49,6 +51,7 @@ export default function ProductForm() {
             { id: 2, name: "Posters", description: "Decorative posters" },
             { id: 3, name: "Mugs", description: "Custom mugs" },
             { id: 4, name: "Phone Cases", description: "Phone cases" },
+            { id: 5, name: "Hat", description: "Custom hats" }, // Add Hat category
           ]);
         }
 
@@ -190,7 +193,28 @@ export default function ProductForm() {
       newErrors.name = "Product name is required";
     }
 
-    if (formData.basePrice <= 0) {
+    // Price validation based on category
+    const categoryName = getSelectedCategoryName().toLowerCase();
+    
+    if (categoryName.includes("t-shirt")) {
+      if (formData.basePrice < 14) {
+        newErrors.basePrice = "T-shirt base price must be at least $14";
+      } else if (formData.basePrice > 40) {
+        newErrors.basePrice = "T-shirt base price cannot exceed $40";
+      }
+    } else if (categoryName.includes("hat")) {
+      if (formData.basePrice < 8) {
+        newErrors.basePrice = "Hat base price must be at least $8";
+      } else if (formData.basePrice > 30) {
+        newErrors.basePrice = "Hat base price cannot exceed $30";
+      }
+    } else if (categoryName.includes("mug")) {
+      if (formData.basePrice < 7) {
+        newErrors.basePrice = "Mug base price must be at least $7";
+      } else if (formData.basePrice > 25) {
+        newErrors.basePrice = "Mug base price cannot exceed $25";
+      }
+    } else if (formData.basePrice <= 0) {
       newErrors.basePrice = "Base price must be greater than zero";
     }
 
@@ -297,6 +321,27 @@ export default function ProductForm() {
     return null;
   };
 
+  // Get the selected category name
+  const getSelectedCategoryName = () => {
+    if (!formData.categoryId) return "";
+    const category = categories.find(c => c.id === formData.categoryId);
+    return category ? category.name : "";
+  };
+
+  // Function to determine which mockup image to display
+  const getMockupImage = () => {
+    const categoryName = getSelectedCategoryName().toLowerCase();
+    
+    if (categoryName.includes("hat")) {
+      return Hat;
+    } else if (categoryName.includes("mug")) {
+      return Mug;
+    } else {
+      // Default to T-shirt mockup
+      return TShirt;
+    }
+  };
+
   return (
     <div>
       <div className='flex items-center mb-6'>
@@ -372,7 +417,16 @@ export default function ProductForm() {
                       value={formData.basePrice}
                       onChange={handleInputChange}
                       step='0.01'
-                      min='0'
+                      min={
+                        getSelectedCategoryName().toLowerCase().includes("t-shirt") ? 14 :
+                        getSelectedCategoryName().toLowerCase().includes("hat") ? 8 :
+                        getSelectedCategoryName().toLowerCase().includes("mug") ? 7 : 0
+                      }
+                      max={
+                        getSelectedCategoryName().toLowerCase().includes("t-shirt") ? 40 :
+                        getSelectedCategoryName().toLowerCase().includes("hat") ? 30 :
+                        getSelectedCategoryName().toLowerCase().includes("mug") ? 25 : 999
+                      }
                       className={`block w-full pl-8 rounded-md border ${
                         errors.basePrice ? "border-red-500" : "border-gray-300"
                       } px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
@@ -453,36 +507,48 @@ export default function ProductForm() {
               </div>
             </div>
 
-            {/* Right Column - T-shirt Design Preview */}
+            {/* Right Column - Product Design Preview */}
             <div className='lg:col-span-1'>
               <div className='border border-gray-200 rounded-lg p-4'>
                 <h3 className='text-sm font-medium text-gray-700 mb-3'>
-                  Design Preview
+                  Design Preview - {getSelectedCategoryName()}
                 </h3>
                 {getSelectedDesign() ? (
                   <div className='relative flex justify-center bg-gray-100 rounded-md p-4'>
-                    {/* T-shirt mockup base */}
+                    {/* Dynamic mockup base based on category */}
                     <div className='relative w-full max-w-sm'>
-                      {/* Black t-shirt base image */}
+                      {/* Mockup base image - changes based on category */}
                       <img
-                        src={TShirt}
-                        alt='T-shirt mockup'
+                        src={getMockupImage()}
+                        alt={`${getSelectedCategoryName()} mockup`}
                         className='w-full'
                         onError={(e) =>
                           ((e.target as HTMLImageElement).src =
-                            "https://via.placeholder.com/300/000000/FFFFFF?text=T-Shirt")
+                            "https://via.placeholder.com/300/000000/FFFFFF?text=Mockup")
                         }
                       />
 
-                      {/* Design overlay positioned on t-shirt */}
-                      <div className='absolute top-1/4 left-1/2 transform -translate-x-1/2 w-2/5'>
+                      {/* Design overlay positioned on mockup - sized differently based on product category */}
+                      <div className={`absolute ${
+                        getSelectedCategoryName().toLowerCase().includes("hat") 
+                          ? 'top-1/3 left-1/2 transform -translate-x-1/2 w-3/5' 
+                        : getSelectedCategoryName().toLowerCase().includes("mug")
+                          ? 'top-1/4 left-2/4 transform -translate-x-1/2 w-2/4' 
+                          : 'top-1/4 left-1/2 transform -translate-x-1/2 w-2/5' 
+                      }`}>
                         <img
                           src={
                             getSelectedDesign()?.designUrl ||
                             "https://via.placeholder.com/150"
                           }
                           alt={getSelectedDesign()?.name || "Selected design"}
-                          className='w-full object-contain max-h-48'
+                          className={`w-full object-contain ${
+                            getSelectedCategoryName().toLowerCase().includes("hat")
+                              ? 'h-16' 
+                            : getSelectedCategoryName().toLowerCase().includes("mug")
+                              ? 'h-24' 
+                              : 'h-28' 
+                          }`}
                           onError={(e) =>
                             ((e.target as HTMLImageElement).src =
                               "https://via.placeholder.com/150")
@@ -495,12 +561,12 @@ export default function ProductForm() {
                   <div className='bg-gray-100 rounded-md p-8 text-center text-gray-500'>
                     <div className='relative w-full max-w-sm mx-auto opacity-50'>
                       <img
-                        src='/tshirt-mockup.png'
-                        alt='T-shirt mockup'
+                        src={getMockupImage()}
+                        alt={`${getSelectedCategoryName() || 'Product'} mockup`}
                         className='w-full'
                         onError={(e) =>
                           ((e.target as HTMLImageElement).src =
-                            "https://via.placeholder.com/300/000000/FFFFFF?text=T-Shirt")
+                            "https://via.placeholder.com/300/000000/FFFFFF?text=Mockup")
                         }
                       />
                     </div>

@@ -34,6 +34,6 @@ public class ProductCatalogController {
     @GetMapping("/{productId}/with-variants")
     @Operation(summary = "Get detailed product information by ID")
     public ResponseEntity<ProductDetailWithVariantsDTO> getProductDetailsWithVariants(@PathVariable Long productId) {
-        return ResponseEntity.ok(productCatalogService.getProductDetailWithVariants(productId));
+        return ResponseEntity.ok(productCatalogService.getProductDetailsWithVariants(productId));
     }
 }
