@@ -8,18 +8,25 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  // If there's only one page or none, don't render pagination
+  if (totalPages <= 1) return null;
+  
   const getPageNumbers = () => {
     const pageNumbers = [];
     
+    // Show up to 5 page numbers
     const displayCount = 5; 
     const sidesCount = Math.floor((displayCount - 1) / 2);
     
     let startPage = Math.max(0, currentPage - sidesCount);
     let endPage = Math.min(totalPages - 1, currentPage + sidesCount);
     
+    // Adjust when near the beginning
     if (currentPage < sidesCount) {
       endPage = Math.min(totalPages - 1, displayCount - 1);
-    } else if (currentPage > totalPages - sidesCount - 1) {
+    } 
+    // Adjust when near the end
+    else if (currentPage > totalPages - sidesCount - 1) {
       startPage = Math.max(0, totalPages - displayCount);
     }
     
@@ -34,19 +41,21 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
   
   const handlePageClick = (page: number) => {
     if (page >= 0 && page < totalPages) {
+      // Call the passed onPageChange function when a page is clicked
       onPageChange(page);
+      
+      // Scroll to top for better UX
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  if (totalPages <= 1) return null;
   
   return (
-    <div className="flex justify-center items-center space-x-1">
+    <div className="flex justify-center items-center space-x-1 my-8">
       {/* Previous button */}
       <button
         onClick={() => handlePageClick(currentPage - 1)}
         disabled={currentPage === 0}
-        className={`px-3 py-2 rounded-md ${
+        className={`px-3 py-2 rounded-md focus:outline-none ${
           currentPage === 0 
             ? 'text-gray-400 cursor-not-allowed' 
             : 'text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'
@@ -61,7 +70,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <button
           key={page}
           onClick={() => handlePageClick(page)}
-          className={`px-3 py-1 rounded-md ${
+          className={`px-3 py-1 rounded-md focus:outline-none ${
             currentPage === page
               ? 'bg-purple-600 text-white'
               : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -77,7 +86,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       <button
         onClick={() => handlePageClick(currentPage + 1)}
         disabled={currentPage === totalPages - 1}
-        className={`px-3 py-2 rounded-md ${
+        className={`px-3 py-2 rounded-md focus:outline-none ${
           currentPage === totalPages - 1
             ? 'text-gray-400 cursor-not-allowed'
             : 'text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300'

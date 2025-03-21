@@ -3,6 +3,9 @@ import { Link } from "react-router-dom"
 import { ShoppingCart } from "lucide-react"
 import { addToCart } from "../../store/slices/cartSlice"
 import type { Product } from "../../types/product"
+import TShirt from "../../../public/assets/images/t-shirt.png"
+import Hat from "../../../public/assets/images/hat.png"
+import Mug from "../../../public/assets/images/mugs.png"
 
 interface ProductCardProps {
   product: Product;
@@ -18,7 +21,22 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
   
   const designImage = product.design?.designUrl || product.image || "../../../public/assets/images/default-avatar.png"
   
-  const mockupImage = "../../../public/assets/images/t-shirt.png" 
+
+  const getMockupImage = () => {
+    const categoryName = typeof product.category === 'string' 
+                        ? product.category.toLowerCase()
+                        : product.category?.name?.toLowerCase() || '';
+                        
+    if (categoryName.includes("hat")) {
+      return Hat;
+    } else if (categoryName.includes("mug")) {
+      return Mug;
+    } else {
+      return TShirt;
+    }
+  };
+  
+  const mockupImage = getMockupImage();
   
   const productPrice = product.price || product.basePrice || 0
   
@@ -37,25 +55,35 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
     }))
   }
 
-  // Compact card for hot products section
   if (compact) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden transition-transform duration-300 hover:shadow-md hover:-translate-y-1">
         <Link to={`/products/${productId}`} className="block relative">
           <div className="relative h-40 bg-gray-200 overflow-hidden">
-            {/* Base mockup image */}
             <img 
               src={mockupImage} 
-              alt="T-shirt mockup" 
+              alt={`${categoryName} mockup`} 
               className="w-full h-full object-cover absolute inset-0" 
             />
             
-            {/* Design overlay */}
-            <div className="absolute inset-0 flex items-center justify-center">
+
+            <div className={`absolute inset-0 flex items-center justify-center ${
+              categoryName.toLowerCase().includes("hat") 
+                ? 'pt-4' 
+                : categoryName.toLowerCase().includes("mug")
+                  ? 'px-8' 
+                  : '' 
+            }`}>
               <img 
                 src={designImage} 
                 alt={productName} 
-                className="w-1/3 h-auto object-contain max-h-32 mix-blend-normal" 
+                className={`${
+                  categoryName.toLowerCase().includes("hat")
+                    ? 'w-1/3 max-h-14 mb-8' 
+                    : categoryName.toLowerCase().includes("mug")
+                      ? 'w-1/2 max-h-20 mr-8' 
+                      : 'w-1/3 max-h-24' 
+                } object-contain mix-blend-normal`}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = "../../../public/assets/images/default-avatar.png";
@@ -96,24 +124,34 @@ export default function ProductCard({ product, compact = false }: ProductCardPro
     )
   }
 
-  // Regular card for product catalog
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
       <Link to={`/products/${productId}`} className="block relative">
         <div className="relative h-64 bg-gray-200 overflow-hidden">
-          {/* Base mockup image */}
+          
           <img 
             src={mockupImage} 
-            alt="T-shirt mockup" 
+            alt={`${categoryName} mockup`} 
             className="w-full h-full object-cover absolute inset-0" 
           />
-          
-          {/* Design overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
+          {/* Adjust the design image position based on category */}
+          <div className={`absolute inset-0 flex items-center justify-center ${
+            categoryName.toLowerCase().includes("hat") 
+              ? 'pt-6' 
+              : categoryName.toLowerCase().includes("mug")
+                ? 'px-12' 
+                : '' 
+          }`}>
             <img 
               src={designImage} 
               alt={productName} 
-              className="w-1/3 h-auto object-contain max-h-48 mix-blend-normal" 
+              className={`${
+                categoryName.toLowerCase().includes("hat")
+                  ? 'w-1/3 max-h-16 mb-10' 
+                  : categoryName.toLowerCase().includes("mug")
+                    ? 'w-1/2 max-h-32 mr-9' 
+                    : 'w-1/3 max-h-48' 
+              } object-contain mix-blend-normal`}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = "../../../public/assets/images/default-avatar.png";
