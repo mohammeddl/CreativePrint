@@ -103,60 +103,53 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className='min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900'>
+    <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
       <Header />
-      <main className='flex-grow container mx-auto px-4 py-8'>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}>
-          <h1 className='text-3xl font-bold mb-6 text-gray-800 dark:text-white'>
-            Our Products
-          </h1>
-          <div className='flex flex-col md:flex-row gap-8'>
-            <aside className='md:w-1/4'>
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-white">Our Products</h1>
+          <div className="flex flex-col md:flex-row gap-8">
+            <aside className="md:w-1/4">
               <FilterSidebar />
             </aside>
-            <div className='md:w-3/4'>
+            <div className="md:w-3/4">
               {filteredItems.length > 0 ? (
                 <>
                   <ProductGrid products={filteredItems} />
-
+                  
                   {/* Pagination Component */}
                   {totalPages > 1 && (
-                    <div className='mt-8'>
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
+                    <div className="mt-8">
+                      <Pagination 
+                        currentPage={currentPage} 
+                        totalPages={totalPages} 
+                        onPageChange={handlePageChange} 
                       />
-                      {/* Optional debugging display */}
-                      {process.env.NODE_ENV === "development" && (
-                        <div className='text-xs text-gray-500 mt-2 text-center'>
-                          Page {currentPage + 1} of {totalPages}
-                        </div>
-                      )}
                     </div>
                   )}
                 </>
               ) : (
-                <div className='bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center'>
-                  <h3 className='text-xl font-semibold mb-2'>
-                    No products found
-                  </h3>
-                  <p className='text-gray-600 dark:text-gray-400'>
-                    Try adjusting your filters or check back later for new
-                    products.
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
+                  <h3 className="text-xl font-semibold mb-2">No products found</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Try adjusting your filters or check back later for new products.
                   </p>
                 </div>
               )}
             </div>
           </div>
-
-          <HotProducts />
         </motion.div>
+        
+        {/* Hot Products section - placed outside the pagination-affected area */}
+        <div className="mt-12">
+          <HotProducts />
+        </div>
       </main>
       <Footer />
     </div>
-  );
+  )
 }
