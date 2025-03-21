@@ -1,38 +1,53 @@
-import { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { Routes, Route } from "react-router-dom"
-import { fetchAdminData } from "../../store/slices/adminSlice"
-import type { RootState } from "../../store/store"
-import UserManagement from "../../components/admin/UserManagement"
-import ProductApproval from "../../components/admin/ProductApproval"
-import Statistics from "../../components/admin/Statistics"
-import AdminLayout from "../../components/admin/AdminLayout"
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Routes, Route } from "react-router-dom";
+import { fetchAdminData } from "../../store/slices/adminSlice";
+import type { RootState } from "../../store/store";
+import AdminLayout from "../../components/admin/AdminLayout";
+import Dashboard from "./Dashboard";
+import UserManagement from "./UserManagement";
+import ProductManagement from "./ProductManagement";
+import AdminSettings from "./AdminSettings";
+import AdminPermissions from "./AdminPermissions";
 
 export default function AdminDashboard() {
-  const dispatch = useDispatch()
-  const { loading, error } = useSelector((state: RootState) => state.admin)
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state: RootState) => state.admin);
 
   useEffect(() => {
-    dispatch(fetchAdminData())
-  }, [dispatch])
+    dispatch(fetchAdminData());
+  }, [dispatch]);
 
-  if (loading) {
-    return <div>Loading...</div>
+  if (loading && !document.querySelector('.admin-dashboard')) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-6">{error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<AdminLayout />}>
-        <Route path="users" element={<UserManagement />} />
-        <Route path="products" element={<ProductApproval />} />
-        <Route path="statistics" element={<Statistics />} />
-        <Route index element={<Statistics />} />
-      </Route>
-    </Routes>
-  )
+    <div className="admin-dashboard">
+      <Routes>
+        <Route path="/" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="permissions" element={<AdminPermissions />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+      </Routes>
+    </div>
+  );
 }
-
