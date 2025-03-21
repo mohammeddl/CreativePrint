@@ -5,9 +5,11 @@ import com.creativePrint.repository.UserRepository;
 import com.creativePrint.service.EmailMarketingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.awt.print.Pageable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -23,8 +25,11 @@ public class EmailMarketingTasks {
     @Scheduled(cron = "0 0 10 * * MON")
     public void sendWeeklyNewProductEmails() {
         log.info("Starting weekly new product email campaign");
-        
-        List<User> activeUsers = userRepository.findByActive(true);
+
+
+        Pageable pageable = (Pageable) PageRequest.of(0, 100); // Adjust the page size as needed
+        List<User> activeUsers = userRepository.findByActive(true, (org.springframework.data.domain.Pageable) pageable).getContent();
+
         for (User user : activeUsers) {
             emailMarketingService.sendNewProductsEmail(user);
         }

@@ -1,4 +1,4 @@
-package com.creativePrint.controller;
+package com.creativePrint.controller.admin;
 
 import com.creativePrint.dto.order.req.OrderStatusUpdateRequest;
 import com.creativePrint.dto.order.resp.OrderResponse;

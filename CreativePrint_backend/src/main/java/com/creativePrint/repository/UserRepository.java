@@ -21,7 +21,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRole(Role role);
 
-    List<User> findByActive(boolean active);
+    // Add this method for the admin functionality
+    Page<User> findByActive(boolean active, Pageable pageable);
+
+    // Add this method for the admin functionality
+    Page<User> findByRoleAndActive(Role role, boolean active, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE " +
             "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
