@@ -1,27 +1,16 @@
+// src/pages/admin/AdminPermissions.tsx
 import React, { useState, useEffect } from 'react';
 import { Shield, Save, CheckCircle, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { api } from '../../components/services/api/axios';
-
-interface Permission {
-  id: number;
-  name: string;
-  description: string;
-}
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-  permissions: number[];
-}
+import { adminService } from '../../components/services/api/admin.service';
+import type { Role, Permission } from '../../types/admin';
 
 export default function AdminPermissions() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('CLIENT');
+  const [activeTab, setActiveTab] = useState<string>('');
 
   useEffect(() => {
     fetchRolesAndPermissions();
@@ -31,54 +20,22 @@ export default function AdminPermissions() {
     try {
       setLoading(true);
       
-      // Make API call to fetch roles and permissions
+      // Fetch roles and permissions
       const [rolesResponse, permissionsResponse] = await Promise.all([
-        api.get('/admin/roles'),
-        api.get('/admin/permissions')
+        adminService.getRoles(),
+        adminService.getPermissions()
       ]);
       
-      setRoles(rolesResponse.data || []);
-      setPermissions(permissionsResponse.data || []);
+      setRoles(rolesResponse || []);
+      setPermissions(permissionsResponse || []);
+      
+      // Set the first role as active
+      if (rolesResponse && rolesResponse.length > 0) {
+        setActiveTab(rolesResponse[0].name);
+      }
     } catch (error) {
       console.error('Error fetching roles and permissions:', error);
       toast.error('Failed to load roles and permissions');
-      
-      // Sample data for demo/testing
-      setPermissions([
-        { id: 1, name: 'products.view', description: 'View products' },
-        { id: 2, name: 'products.create', description: 'Create products' },
-        { id: 3, name: 'products.edit', description: 'Edit products' },
-        { id: 4, name: 'products.delete', description: 'Delete products' },
-        { id: 5, name: 'orders.view', description: 'View orders' },
-        { id: 6, name: 'orders.manage', description: 'Manage orders' },
-        { id: 7, name: 'users.view', description: 'View users' },
-        { id: 8, name: 'users.manage', description: 'Manage users' },
-        { id: 9, name: 'designs.view', description: 'View designs' },
-        { id: 10, name: 'designs.create', description: 'Create designs' },
-        { id: 11, name: 'designs.edit', description: 'Edit designs' },
-        { id: 12, name: 'admin.access', description: 'Access admin panel' },
-      ]);
-      
-      setRoles([
-        { 
-          id: 1, 
-          name: 'ADMIN', 
-          description: 'Administrator with full access', 
-          permissions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] 
-        },
-        { 
-          id: 2, 
-          name: 'CLIENT', 
-          description: 'Regular customer', 
-          permissions: [1, 5, 9] 
-        },
-        { 
-          id: 3, 
-          name: 'PARTNER', 
-          description: 'Design partner', 
-          permissions: [1, 2, 3, 5, 9, 10, 11] 
-        }
-      ]);
     } finally {
       setLoading(false);
     }
@@ -108,7 +65,7 @@ export default function AdminPermissions() {
       
       // Call API to save role permissions
       await Promise.all(roles.map(role => 
-        api.put(`/admin/roles/${role.id}/permissions`, { permissions: role.permissions })
+        adminService.updateRolePermissions(role.id, role.permissions)
       ));
       
       toast.success('Permissions updated successfully');
@@ -120,6 +77,37 @@ export default function AdminPermissions() {
     }
   };
 
+  // Helper function to format permission name for display
+  const formatPermissionName = (permissionName: string): string => {
+    return permissionName
+      .split('.')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  };
+
+  // Helper function to format category name
+  const formatCategoryName = (category: string): string => {
+    return category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
+  // Helper function to group permissions by category
+  const groupPermissionsByCategory = (permissions: Permission[]): Record<string, Permission[]> => {
+    return permissions.reduce((groups, permission) => {
+      const [category] = permission.name.split('.');
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      groups[category].push(permission);
+      return groups;
+    }, {} as Record<string, Permission[]>);
+  };
+
+  // Helper function to check if a permission is essential for admin role
+  const isEssentialAdminPermission = (permissionName: string): boolean => {
+    const essentialPermissions = ['admin.access', 'users.manage'];
+    return essentialPermissions.includes(permissionName);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -129,6 +117,7 @@ export default function AdminPermissions() {
   }
 
   const activeRole = getActiveRole();
+  const groupedPermissions = groupPermissionsByCategory(permissions);
 
   return (
     <div className="space-y-6">
@@ -137,7 +126,7 @@ export default function AdminPermissions() {
         <button
           onClick={savePermissions}
           disabled={saving}
-          className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+          className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-purple-300"
         >
           {saving ? (
             <>
@@ -185,7 +174,7 @@ export default function AdminPermissions() {
             <h3 className="text-sm font-medium text-gray-500 mb-4">Permissions</h3>
             <div className="space-y-4">
               {/* Group permissions by category */}
-              {Object.entries(groupPermissionsByCategory(permissions)).map(([category, perms]) => (
+              {Object.entries(groupedPermissions).map(([category, perms]) => (
                 <div key={category} className="border rounded-md overflow-hidden">
                   <div className="bg-gray-50 px-4 py-2 font-medium text-gray-700">
                     {formatCategoryName(category)}
@@ -233,35 +222,4 @@ export default function AdminPermissions() {
       </div>
     </div>
   );
-}
-
-// Helper function to format permission name for display
-function formatPermissionName(permissionName: string): string {
-  return permissionName
-    .split('.')
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
-
-// Helper function to format category name
-function formatCategoryName(category: string): string {
-  return category.charAt(0).toUpperCase() + category.slice(1);
-}
-
-// Helper function to group permissions by category
-function groupPermissionsByCategory(permissions: Permission[]): Record<string, Permission[]> {
-  return permissions.reduce((groups, permission) => {
-    const [category] = permission.name.split('.');
-    if (!groups[category]) {
-      groups[category] = [];
-    }
-    groups[category].push(permission);
-    return groups;
-  }, {} as Record<string, Permission[]>);
-}
-
-// Helper function to check if a permission is essential for admin role
-function isEssentialAdminPermission(permissionName: string): boolean {
-  const essentialPermissions = ['admin.access', 'users.manage'];
-  return essentialPermissions.includes(permissionName);
 }

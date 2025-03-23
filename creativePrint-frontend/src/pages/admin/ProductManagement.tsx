@@ -7,176 +7,93 @@ import {
   Archive,
   RefreshCw,
   Eye,
-  Edit,
-  Tag,
-  PackageOpen,
   CheckCircle,
-  ArrowUpRight
+  ArrowUpRight,
+  PackageOpen
 } from 'lucide-react';
-import { api } from '../../components/services/api/axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchAllProducts, 
+  toggleProductArchiveStatus, 
+  deleteProduct 
+} from '../../store/slices/adminSlice';
+import { RootState } from '../../store/store';
+import { AppDispatch } from '../../store/store';
+import { productService } from '../../components/services/api/product.service';
+import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
-import { Link } from 'react-router-dom';
-
-interface AdminProduct {
-  id: number | string;
-  name: string;
-  description: string;
-  basePrice: number;
-  category: {
-    id: number;
-    name: string;
-  };
-  design: {
-    id: number;
-    name: string;
-    designUrl: string;
-    creator: {
-      id: number;
-      firstName: string;
-      lastName: string;
-    };
-  };
-  archived: boolean;
-  createdAt: string;
-  totalSold: number;
-  totalStock: number;
-}
 
 export default function ProductManagement() {
-  const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { allProducts, productsPagination, loading, error } = useSelector((state: RootState) => state.admin);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [categories, setCategories] = useState<{id: number; name: string}[]>([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetchProducts();
     fetchCategories();
-  }, [currentPage, searchQuery, categoryFilter, statusFilter]);
+    fetchProducts();
+  }, [dispatch, productsPagination.currentPage, categoryFilter, statusFilter]);
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/categories');
-      setCategories(response.data || []);
+      const categoriesData = await productService.getCategories();
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      // Sample categories for demo/testing
-      setCategories([
-        { id: 1, name: 'T-Shirts' },
-        { id: 2, name: 'Mugs' },
-        { id: 3, name: 'Posters' },
-        { id: 4, name: 'Phone Cases' }
-      ]);
+      toast.error('Failed to load categories');
     }
   };
 
   const fetchProducts = async () => {
     try {
-      setLoading(true);
-      // Construct query parameters
-      const params = new URLSearchParams();
-      params.append('page', currentPage.toString());
-      params.append('size', '10');
-      if (searchQuery) params.append('search', searchQuery);
-      if (categoryFilter) params.append('category', categoryFilter);
-      if (statusFilter) params.append('status', statusFilter);
-
-      // Make API call to get all products including archived ones
-      const response = await api.get(`/admin/products?${params.toString()}`);
-      
-      setProducts(response.data.content || []);
-      setTotalPages(response.data.totalPages || 0);
+      await dispatch(fetchAllProducts({
+        page: productsPagination.currentPage,
+        size: 10,
+        search: searchQuery,
+        status: statusFilter
+      }));
     } catch (error) {
-      console.error('Error fetching products:', error);
       toast.error('Failed to load products');
-      
-      // Sample data for demo/testing
-      setProducts([
-        {
-          id: 1,
-          name: 'Abstract Pattern T-Shirt',
-          description: 'Comfortable cotton t-shirt with abstract design',
-          basePrice: 19.99,
-          category: { id: 1, name: 'T-Shirts' },
-          design: {
-            id: 1,
-            name: 'Abstract Pattern',
-            designUrl: 'https://via.placeholder.com/150',
-            creator: { id: 2, firstName: 'Jane', lastName: 'Smith' }
-          },
-          archived: false,
-          createdAt: '2023-01-15T10:30:00Z',
-          totalSold: 42,
-          totalStock: 58
-        },
-        {
-          id: 2,
-          name: 'Mountain Landscape Mug',
-          description: 'Ceramic mug with mountain landscape design',
-          basePrice: 12.99,
-          category: { id: 2, name: 'Mugs' },
-          design: {
-            id: 2,
-            name: 'Mountain Landscape',
-            designUrl: 'https://via.placeholder.com/150',
-            creator: { id: 2, firstName: 'Jane', lastName: 'Smith' }
-          },
-          archived: true,
-          createdAt: '2023-02-05T14:20:00Z',
-          totalSold: 18,
-          totalStock: 0
-        },
-        {
-          id: 3,
-          name: 'Cityscape Poster',
-          description: 'High-quality print of urban cityscape',
-          basePrice: 24.99,
-          category: { id: 3, name: 'Posters' },
-          design: {
-            id: 3,
-            name: 'Cityscape',
-            designUrl: 'https://via.placeholder.com/150',
-            creator: { id: 1, firstName: 'John', lastName: 'Doe' }
-          },
-          archived: false,
-          createdAt: '2023-01-10T09:15:00Z',
-          totalSold: 7,
-          totalStock: 23
-        }
-      ]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleSearch = () => {
+    fetchProducts();
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(0);
   };
 
   const handleCategoryFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCategoryFilter(e.target.value);
-    setCurrentPage(0);
   };
 
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
-    setCurrentPage(0);
   };
 
-  const handleViewProduct = (product: AdminProduct) => {
-    setSelectedProduct(product);
+  const handleViewProduct = (productId: number) => {
+    setSelectedProductId(productId);
     setIsViewModalOpen(true);
   };
 
-  const toggleArchiveStatus = async (productId: string | number, isArchived: boolean) => {
+  const handlePageChange = (pageNumber: number) => {
+    dispatch(fetchAllProducts({
+      page: pageNumber,
+      size: 10,
+      search: searchQuery,
+      status: statusFilter
+    }));
+  };
+
+  const toggleArchiveStatus = async (productId: number | string, isArchived: boolean) => {
     const action = isArchived ? 'unarchive' : 'archive';
     const title = isArchived ? 'Unarchive Product' : 'Archive Product';
     const text = isArchived 
@@ -195,23 +112,14 @@ export default function ProductManagement() {
 
     if (result.isConfirmed) {
       try {
-        // Call API to toggle archive status
-        await api.patch(`/admin/products/${productId}/archive`, { archived: !isArchived });
-        
-        // Update local state
-        setProducts(products.map(product => 
-          product.id === productId ? { ...product, archived: !isArchived } : product
-        ));
-        
-        toast.success(`Product ${action}d successfully`);
+        await dispatch(toggleProductArchiveStatus({ productId, archived: isArchived }));
       } catch (error) {
-        console.error(`Error ${action}ing product:`, error);
         toast.error(`Failed to ${action} product`);
       }
     }
   };
 
-  const handleDeleteProduct = async (productId: string | number) => {
+  const handleDeleteProduct = async (productId: number | string) => {
     const result = await Swal.fire({
       title: 'Delete Product',
       text: 'Are you sure you want to permanently delete this product? This action cannot be undone.',
@@ -224,15 +132,8 @@ export default function ProductManagement() {
 
     if (result.isConfirmed) {
       try {
-        // Call API to delete product
-        await api.delete(`/admin/products/${productId}`);
-        
-        // Update local state
-        setProducts(products.filter(product => product.id !== productId));
-        
-        toast.success('Product deleted successfully');
+        await dispatch(deleteProduct(productId));
       } catch (error) {
-        console.error('Error deleting product:', error);
         toast.error('Failed to delete product');
       }
     }
@@ -252,6 +153,8 @@ export default function ProductManagement() {
     };
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
+
+  const selectedProduct = allProducts.find(product => product.id === selectedProductId);
 
   return (
     <div className="space-y-6">
@@ -278,11 +181,15 @@ export default function ProductManagement() {
             placeholder="Search products..."
             value={searchQuery}
             onChange={handleSearchChange}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
           {searchQuery && (
             <button
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              onClick={() => setSearchQuery("")}
+              onClick={() => {
+                setSearchQuery("");
+                handleSearch();
+              }}
             >
               <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
             </button>
@@ -329,7 +236,7 @@ export default function ProductManagement() {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
         </div>
-      ) : products.length > 0 ? (
+      ) : allProducts.length > 0 ? (
         <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
@@ -358,13 +265,13 @@ export default function ProductManagement() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {allProducts.map((product) => (
                 <tr key={product.id} className={`hover:bg-gray-50 ${product.archived ? 'bg-gray-50' : ''}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="h-10 w-10 flex-shrink-0">
                         <img 
-                          src={product.design.designUrl || "https://via.placeholder.com/100"} 
+                          src={product.design?.designUrl || product.image || "https://via.placeholder.com/100"} 
                           alt={product.name}
                           className="h-10 w-10 rounded object-cover"
                           onError={(e) => {
@@ -381,52 +288,51 @@ export default function ProductManagement() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {product.category.name}
+                      {typeof product.category === 'string' ? product.category : product.category?.name}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${product.basePrice.toFixed(2)}
+                    ${(product.price || product.basePrice || 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {product.design.creator.firstName} {product.design.creator.lastName}
+                      {product.design?.creator ? 
+                        `${product.design.creator.firstName} ${product.design.creator.lastName}` : 
+                        'Unknown'
+                      }
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      product.archived 
-                        ? 'bg-gray-100 text-gray-800' 
-                        : 'bg-green-100 text-green-800'
+                      product.archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
                     }`}>
                       {product.archived ? 'Archived' : 'Active'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      product.totalStock > 10 
+                      (product.stock || 0) > 10 
                         ? 'bg-green-100 text-green-800' 
-                        : product.totalStock > 0 
+                        : (product.stock || 0) > 0 
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
                     }`}>
-                      {product.totalStock} in stock
+                      {product.stock || 0} in stock
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
-                        onClick={() => handleViewProduct(product)}
+                        onClick={() => handleViewProduct(Number(product.id))}
                         className="text-blue-600 hover:text-blue-900 p-1"
                         title="View Details"
                       >
                         <Eye className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => toggleArchiveStatus(product.id, product.archived)}
+                        onClick={() => toggleArchiveStatus(product.id, product.archived || false)}
                         className={`${
-                          product.archived 
-                            ? 'text-green-600 hover:text-green-900' 
-                            : 'text-amber-600 hover:text-amber-900'
+                          product.archived ? 'text-green-600 hover:text-green-900' : 'text-amber-600 hover:text-amber-900'
                         } p-1`}
                         title={product.archived ? 'Unarchive Product' : 'Archive Product'}
                       >
@@ -439,15 +345,15 @@ export default function ProductManagement() {
                       >
                         <Trash className="h-5 w-5" />
                       </button>
-                      <a
-                        href={`/products/${product.id}`}
+                      <Link
+                        to={`/products/${product.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-purple-600 hover:text-purple-900 p-1"
                         title="View on Store"
                       >
                         <ArrowUpRight className="h-5 w-5" />
-                      </a>
+                      </Link>
                     </div>
                   </td>
                 </tr>
@@ -470,29 +376,29 @@ export default function ProductManagement() {
       )}
       
       {/* Pagination */}
-      {totalPages > 1 && (
+      {productsPagination.totalPages > 1 && (
         <div className="flex justify-center mt-6">
           <nav className="flex items-center space-x-2">
             <button
-              onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
-              disabled={currentPage === 0}
-              className={`px-3 py-1 rounded-md ${currentPage === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+              onClick={() => handlePageChange(Math.max(0, productsPagination.currentPage - 1))}
+              disabled={productsPagination.currentPage === 0}
+              className={`px-3 py-1 rounded-md ${productsPagination.currentPage === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               Previous
             </button>
-            {[...Array(totalPages)].map((_, i) => (
+            {[...Array(productsPagination.totalPages)].map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCurrentPage(i)}
-                className={`px-3 py-1 rounded-md ${currentPage === i ? 'bg-purple-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                onClick={() => handlePageChange(i)}
+                className={`px-3 py-1 rounded-md ${productsPagination.currentPage === i ? 'bg-purple-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 {i + 1}
               </button>
             ))}
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
-              disabled={currentPage === totalPages - 1}
-              className={`px-3 py-1 rounded-md ${currentPage === totalPages - 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
+              onClick={() => handlePageChange(Math.min(productsPagination.totalPages - 1, productsPagination.currentPage + 1))}
+              disabled={productsPagination.currentPage === productsPagination.totalPages - 1}
+              className={`px-3 py-1 rounded-md ${productsPagination.currentPage === productsPagination.totalPages - 1 ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'}`}
             >
               Next
             </button>
@@ -521,7 +427,7 @@ export default function ProductManagement() {
                 <div>
                   <div className="rounded-lg overflow-hidden border border-gray-200 mb-4">
                     <img
-                      src={selectedProduct.design.designUrl || "https://via.placeholder.com/400"}
+                      src={selectedProduct.design?.designUrl || selectedProduct.image || "https://via.placeholder.com/400"}
                       alt={selectedProduct.name}
                       className="w-full h-auto object-cover"
                       onError={(e) => {
@@ -535,26 +441,27 @@ export default function ProductManagement() {
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Creator</h4>
                       <p className="text-sm text-gray-900">
-                        {selectedProduct.design.creator.firstName} {selectedProduct.design.creator.lastName}
+                        {selectedProduct.design?.creator ? 
+                          `${selectedProduct.design.creator.firstName} ${selectedProduct.design.creator.lastName}` : 
+                          'Unknown'
+                        }
                       </p>
                     </div>
                     
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Design Name</h4>
-                      <p className="text-sm text-gray-900">{selectedProduct.design.name}</p>
+                      <p className="text-sm text-gray-900">{selectedProduct.design?.name || 'N/A'}</p>
                     </div>
                     
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Created On</h4>
-                      <p className="text-sm text-gray-900">{formatDate(selectedProduct.createdAt)}</p>
+                      <p className="text-sm text-gray-900">{selectedProduct.createdAt ? formatDate(selectedProduct.createdAt) : 'N/A'}</p>
                     </div>
                     
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Status</h4>
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        selectedProduct.archived 
-                          ? 'bg-gray-100 text-gray-800' 
-                          : 'bg-green-100 text-green-800'
+                        selectedProduct.archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
                       }`}>
                         {selectedProduct.archived ? 'Archived' : 'Active'}
                       </span>
@@ -571,13 +478,13 @@ export default function ProductManagement() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Base Price</h4>
-                      <p className="text-lg font-semibold text-gray-900">${selectedProduct.basePrice.toFixed(2)}</p>
+                      <p className="text-lg font-semibold text-gray-900">${(selectedProduct.price || selectedProduct.basePrice || 0).toFixed(2)}</p>
                     </div>
                     
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Category</h4>
                       <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {selectedProduct.category.name}
+                        {typeof selectedProduct.category === 'string' ? selectedProduct.category : selectedProduct.category?.name}
                       </span>
                     </div>
                   </div>
@@ -585,20 +492,35 @@ export default function ProductManagement() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Total Stock</h4>
-                      <p className="text-gray-900">{selectedProduct.totalStock} units</p>
+                      <p className="text-gray-900">{selectedProduct.totalStock || selectedProduct.stock || 0} units</p>
                     </div>
                     
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Total Sold</h4>
-                      <p className="text-gray-900">{selectedProduct.totalSold} units</p>
+                      <p className="text-gray-900">{selectedProduct.totalSold || 0} units</p>
                     </div>
                   </div>
                   
                   <div className="pt-4 border-t">
                     <h4 className="text-sm font-medium text-gray-500 mb-2">Product Variants</h4>
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-500">Variant details would be shown here</p>
-                      {/* Implement variant listing */}
+                      {selectedProduct.variants && selectedProduct.variants.length > 0 ? (
+                        <div className="space-y-2">
+                          {selectedProduct.variants.map((variant, index) => (
+                            <div key={index} className="p-2 bg-white rounded border border-gray-200">
+                              <div className="flex justify-between">
+                                <span className="font-medium">{variant.size} / {variant.color}</span>
+                                <span className="text-gray-600">{variant.stock} in stock</span>
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Price adjustment: ${variant.priceAdjustment.toFixed(2)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No variants available</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -608,11 +530,9 @@ export default function ProductManagement() {
             <div className="p-4 border-t flex justify-between">
               <div>
                 <button
-                  onClick={() => toggleArchiveStatus(selectedProduct.id, selectedProduct.archived)}
+                  onClick={() => toggleArchiveStatus(selectedProduct.id, selectedProduct.archived || false)}
                   className={`px-4 py-2 rounded-md text-white ${
-                    selectedProduct.archived 
-                      ? 'bg-green-600 hover:bg-green-700' 
-                      : 'bg-amber-600 hover:bg-amber-700'
+                    selectedProduct.archived ? 'bg-green-600 hover:bg-green-700' : 'bg-amber-600 hover:bg-amber-700'
                   }`}
                 >
                   {selectedProduct.archived ? 'Unarchive Product' : 'Archive Product'}
