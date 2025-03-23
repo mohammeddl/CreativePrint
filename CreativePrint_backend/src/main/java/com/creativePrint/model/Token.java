@@ -26,7 +26,7 @@ public class Token {
     private boolean expired;
     private boolean revoked;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_token_user"))
     private User user;
 }
