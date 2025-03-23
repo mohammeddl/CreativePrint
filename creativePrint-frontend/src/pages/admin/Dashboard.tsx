@@ -1,78 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, ShoppingBag, DollarSign, Calendar } from 'lucide-react';
-import { api } from '../../components/services/api/axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAdminData } from '../../store/slices/adminSlice';
+import { RootState } from '../../store/store';
+import { AppDispatch } from '../../store/store';
 import toast from 'react-hot-toast';
 
-interface AdminStats {
-  totalUsers: number;
-  totalProducts: number;
-  totalOrders: number;
-  totalRevenue: number;
-  recentOrders: {
-    id: number;
-    customer: string;
-    total: number;
-    status: string;
-    date: string;
-  }[];
-  monthlySales: {
-    month: string;
-    revenue: number;
-  }[];
-}
-
 export default function Dashboard() {
-  const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 0,
-    totalProducts: 0,
-    totalOrders: 0,
-    totalRevenue: 0,
-    recentOrders: [],
-    monthlySales: []
-  });
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { statistics, loading, error } = useSelector((state: RootState) => state.admin);
 
   useEffect(() => {
-    const fetchDashboardStats = async () => {
+    const fetchStats = async () => {
       try {
-        setLoading(true);
-        // You'll need to implement this API endpoint
-        const response = await api.get('/admin/dashboard/stats');
-        setStats(response.data);
-      } catch (error) {
-        console.error('Error fetching dashboard statistics:', error);
+        await dispatch(fetchAdminData());
+      } catch (err) {
         toast.error('Failed to load dashboard statistics');
-        
-        // For demo, let's set some sample data
-        setStats({
-          totalUsers: 254,
-          totalProducts: 143,
-          totalOrders: 87,
-          totalRevenue: 15780.45,
-          recentOrders: [
-            { id: 1042, customer: 'John Doe', total: 125.99, status: 'DELIVERED', date: '2023-03-15' },
-            { id: 1041, customer: 'Jane Smith', total: 89.99, status: 'SHIPPED', date: '2023-03-14' },
-            { id: 1040, customer: 'James Brown', total: 199.50, status: 'PAYMENT_RECEIVED', date: '2023-03-14' },
-            { id: 1039, customer: 'Emily Johnson', total: 45.99, status: 'DELIVERED', date: '2023-03-13' },
-            { id: 1038, customer: 'Michael Williams', total: 159.99, status: 'DELIVERED', date: '2023-03-12' }
-          ],
-          monthlySales: [
-            { month: 'Jan', revenue: 2400 },
-            { month: 'Feb', revenue: 1398 },
-            { month: 'Mar', revenue: 9800 },
-            { month: 'Apr', revenue: 3908 },
-            { month: 'May', revenue: 4800 },
-            { month: 'Jun', revenue: 3800 }
-          ]
-        });
-      } finally {
-        setLoading(false);
       }
     };
-
-    fetchDashboardStats();
-  }, []);
+    
+    fetchStats();
+  }, [dispatch]);
 
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -99,6 +48,23 @@ export default function Dashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-[calc(100vh-100px)]">
+        <div className="bg-white p-8 rounded-lg shadow-xl max-w-md text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <button 
+            onClick={() => dispatch(fetchAdminData())}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -111,7 +77,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Users</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+            <p className="text-2xl font-bold text-gray-900">{statistics.totalUsers}</p>
           </div>
         </div>
         
@@ -121,7 +87,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Products</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
+            <p className="text-2xl font-bold text-gray-900">{statistics.totalProducts}</p>
           </div>
         </div>
         
@@ -131,7 +97,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Orders</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
+            <p className="text-2xl font-bold text-gray-900">{statistics.totalOrders}</p>
           </div>
         </div>
         
@@ -141,7 +107,7 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-            <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">${statistics.totalRevenue.toLocaleString()}</p>
           </div>
         </div>
       </div>
@@ -152,7 +118,7 @@ export default function Dashboard() {
           <h2 className="text-lg font-medium text-gray-900 mb-4">Monthly Revenue</h2>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats.monthlySales}>
+              <BarChart data={statistics.monthlySales}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
@@ -196,7 +162,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {stats.recentOrders.map((order) => (
+                {statistics.recentOrders.map((order) => (
                   <tr key={order.id}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">#{order.id}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>

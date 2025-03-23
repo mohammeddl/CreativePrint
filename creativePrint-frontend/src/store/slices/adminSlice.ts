@@ -1,8 +1,7 @@
+// src/store/slices/adminSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import type { AdminState, ApproveRejectProductPayload } from "../../types/admin"
-import type { User } from "../../types/user"
-import type { Product } from "../../types/product"
-import { api } from "../../components/services/api/axios"
+import { adminService } from "../../components/services/api/admin.service"
 import toast from "react-hot-toast"
 
 const initialState: AdminState = {
@@ -12,7 +11,9 @@ const initialState: AdminState = {
   statistics: {
     totalUsers: 0,
     totalProducts: 0,
-    totalSales: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    recentOrders: [],
     monthlySales: [],
   },
   loading: false,
@@ -31,54 +32,13 @@ const initialState: AdminState = {
 
 export const fetchAdminData = createAsyncThunk("admin/fetchAdminData", async () => {
   try {
-    const statsResponse = await api.get('/admin/dashboard/stats');
+    const statsResponse = await adminService.getDashboardStats();
     return {
-      statistics: statsResponse.data,
+      statistics: statsResponse,
     };
   } catch (error) {
     console.error("Error fetching admin data:", error);
-    // Return mock data if API not yet implemented
-    return {
-      users: [
-        { id: "1", firstName: "John", lastName: "Doe", email: "john@example.com", active: true },
-        { id: "2", firstName: "Jane", lastName: "Smith", email: "jane@example.com", active: true },
-      ] as User[],
-      pendingProducts: [
-        {
-          id: "1",
-          name: "Custom T-Shirt",
-          description: "A cool t-shirt design",
-          price: 19.99,
-          image: "/placeholder.svg",
-          category: "Clothing",
-          isHot: false,
-          stock: 100,
-        },
-        {
-          id: "2",
-          name: "Artistic Mug",
-          description: "Beautiful mug with abstract art",
-          price: 14.99,
-          image: "/placeholder.svg",
-          category: "Accessories",
-          isHot: false,
-          stock: 50,
-        },
-      ] as Product[],
-      statistics: {
-        totalUsers: 100,
-        totalProducts: 500,
-        totalSales: 10000,
-        monthlySales: [
-          { month: "Jan", sales: 1000 },
-          { month: "Feb", sales: 1200 },
-          { month: "Mar", sales: 1500 },
-          { month: "Apr", sales: 1300 },
-          { month: "May", sales: 1700 },
-          { month: "Jun", sales: 1600 },
-        ],
-      },
-    }
+    throw error;
   }
 })
 
@@ -86,14 +46,7 @@ export const fetchAllProducts = createAsyncThunk(
   "admin/fetchAllProducts",
   async (params: { page: number, size: number, search?: string, status?: string }, { rejectWithValue }) => {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', params.page.toString());
-      queryParams.append('size', params.size.toString());
-      if (params.search) queryParams.append('search', params.search);
-      if (params.status) queryParams.append('status', params.status);
-
-      const response = await api.get(`/admin/products?${queryParams.toString()}`);
-      return response.data;
+      return await adminService.getProducts(params);
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch products");
     }
@@ -104,15 +57,7 @@ export const fetchAllUsers = createAsyncThunk(
   "admin/fetchAllUsers",
   async (params: { page: number, size: number, search?: string, role?: string, status?: string }, { rejectWithValue }) => {
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append('page', params.page.toString());
-      queryParams.append('size', params.size.toString());
-      if (params.search) queryParams.append('search', params.search);
-      if (params.role) queryParams.append('role', params.role);
-      if (params.status) queryParams.append('status', params.status);
-
-      const response = await api.get(`/admin/users?${queryParams.toString()}`);
-      return response.data;
+      return await adminService.getUsers(params);
     } catch (error: any) {
       return rejectWithValue(error.response?.data || "Failed to fetch users");
     }
@@ -123,7 +68,7 @@ export const toggleProductArchiveStatus = createAsyncThunk(
   "admin/toggleProductArchiveStatus",
   async ({ productId, archived }: { productId: number | string, archived: boolean }, { rejectWithValue }) => {
     try {
-      await api.patch(`/admin/products/${productId}/archive`, { archived: !archived });
+      await adminService.toggleProductArchiveStatus(productId, !archived);
       toast.success(`Product ${archived ? 'unarchived' : 'archived'} successfully`);
       return { productId, archived: !archived };
     } catch (error: any) {
@@ -137,7 +82,7 @@ export const toggleUserActiveStatus = createAsyncThunk(
   "admin/toggleUserActiveStatus",
   async ({ userId, active }: { userId: number | string, active: boolean }, { rejectWithValue }) => {
     try {
-      await api.patch(`/admin/users/${userId}/status`, { active: !active });
+      await adminService.updateUserStatus(userId, !active);
       toast.success(`User ${active ? 'banned' : 'activated'} successfully`);
       return { userId, active: !active };
     } catch (error: any) {
@@ -151,7 +96,7 @@ export const deleteProduct = createAsyncThunk(
   "admin/deleteProduct",
   async (productId: number | string, { rejectWithValue }) => {
     try {
-      await api.delete(`/admin/products/${productId}`);
+      await adminService.deleteProduct(productId);
       toast.success("Product deleted successfully");
       return productId;
     } catch (error: any) {
@@ -165,7 +110,7 @@ export const deleteUser = createAsyncThunk(
   "admin/deleteUser",
   async (userId: number | string, { rejectWithValue }) => {
     try {
-      await api.delete(`/admin/users/${userId}`);
+      await adminService.deleteUser(userId);
       toast.success("User deleted successfully");
       return userId;
     } catch (error: any) {

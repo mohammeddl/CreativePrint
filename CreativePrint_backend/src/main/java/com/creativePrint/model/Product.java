@@ -42,6 +42,8 @@ public class Product {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    private boolean archived = false;
+
 
     @Override
     public boolean equals(Object o) {
