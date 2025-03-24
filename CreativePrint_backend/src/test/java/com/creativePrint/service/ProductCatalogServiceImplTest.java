@@ -42,9 +42,7 @@ class ProductCatalogServiceImplTest {
         categoryEntity.setName(category);
         Product product1 = new Product();
         Product product2 = new Product();
-        Page & lt;
-        Product > productsPage = new PageImpl & lt;&gt;
-        (List.of(product1, product2));
+        Page<Product> productsPage = new PageImpl<>(List.of(product1, product2));
 
         when(categoriesRepository.findByName(category)).thenReturn(Optional.of(categoryEntity));
         when(productRepository.findByCategoryId(categoryEntity.getId(), any(Pageable.class)))
@@ -59,7 +57,6 @@ class ProductCatalogServiceImplTest {
         assertEquals(2, response.totalItems());
         assertEquals(0, response.currentPage());
     }
-
-    // Add more test cases...
+    
 
 }
