@@ -56,6 +56,7 @@ export default function ProductManagement() {
         page: productsPagination.currentPage,
         size: 10,
         search: searchQuery,
+        categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
         status: statusFilter
       }));
     } catch (error) {
@@ -64,7 +65,13 @@ export default function ProductManagement() {
   };
 
   const handleSearch = () => {
-    fetchProducts();
+    dispatch(fetchAllProducts({
+      page: 0,
+      size: 10,
+      search: searchQuery,
+      categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
+      status: statusFilter
+    }));
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,10 +80,35 @@ export default function ProductManagement() {
 
   const handleCategoryFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCategoryFilter(e.target.value);
+    dispatch(fetchAllProducts({
+      page: 0, 
+      size: 10,
+      search: searchQuery,
+      categoryId: e.target.value ? parseInt(e.target.value) : undefined,
+      status: statusFilter
+    }));
   };
 
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
+    
+    dispatch(fetchAllProducts({
+      page: 0, 
+      size: 10,
+      search: searchQuery,
+      categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
+      status: e.target.value
+    }));
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    dispatch(fetchAllProducts({
+      page: 0,
+      size: 10,
+      categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
+      status: statusFilter
+    }));
   };
 
   const handleViewProduct = (productId: number) => {
@@ -89,6 +121,7 @@ export default function ProductManagement() {
       page: pageNumber,
       size: 10,
       search: searchQuery,
+      categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
       status: statusFilter
     }));
   };
@@ -112,7 +145,9 @@ export default function ProductManagement() {
 
     if (result.isConfirmed) {
       try {
-        await dispatch(toggleProductArchiveStatus({ productId, archived: isArchived }));
+        await dispatch(toggleProductArchiveStatus({ productId, archived: !isArchived }));
+        
+        fetchProducts();
       } catch (error) {
         toast.error(`Failed to ${action} product`);
       }
@@ -133,6 +168,8 @@ export default function ProductManagement() {
     if (result.isConfirmed) {
       try {
         await dispatch(deleteProduct(productId));
+        
+        fetchProducts();
       } catch (error) {
         toast.error('Failed to delete product');
       }
@@ -186,10 +223,7 @@ export default function ProductManagement() {
           {searchQuery && (
             <button
               className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              onClick={() => {
-                setSearchQuery("");
-                handleSearch();
-              }}
+              onClick={handleClearSearch}
             >
               <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
             </button>
@@ -232,6 +266,16 @@ export default function ProductManagement() {
         </div>
       </div>
       
+      {/* Search button for mobile and accessibility */}
+      <div className="md:hidden">
+        <button
+          onClick={handleSearch}
+          className="w-full py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+        >
+          Search
+        </button>
+      </div>
+      
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
@@ -251,15 +295,9 @@ export default function ProductManagement() {
                   Price
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Creator
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stock
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-8 py-3 text-right text-xs  font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -294,14 +332,7 @@ export default function ProductManagement() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ${(product.price || product.basePrice || 0).toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {product.design?.creator ? 
-                        `${product.design.creator.firstName} ${product.design.creator.lastName}` : 
-                        'Unknown'
-                      }
-                    </div>
-                  </td>
+                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       product.archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
@@ -309,17 +340,7 @@ export default function ProductManagement() {
                       {product.archived ? 'Archived' : 'Active'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      (product.stock || 0) > 10 
-                        ? 'bg-green-100 text-green-800' 
-                        : (product.stock || 0) > 0 
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                    }`}>
-                      {product.stock || 0} in stock
-                    </span>
-                  </td>
+                 
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
@@ -345,15 +366,7 @@ export default function ProductManagement() {
                       >
                         <Trash className="h-5 w-5" />
                       </button>
-                      <Link
-                        to={`/products/${product.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-purple-600 hover:text-purple-900 p-1"
-                        title="View on Store"
-                      >
-                        <ArrowUpRight className="h-5 w-5" />
-                      </Link>
+                      
                     </div>
                   </td>
                 </tr>
@@ -438,16 +451,6 @@ export default function ProductManagement() {
                   </div>
                   
                   <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Creator</h4>
-                      <p className="text-sm text-gray-900">
-                        {selectedProduct.design?.creator ? 
-                          `${selectedProduct.design.creator.firstName} ${selectedProduct.design.creator.lastName}` : 
-                          'Unknown'
-                        }
-                      </p>
-                    </div>
-                    
                     <div>
                       <h4 className="text-sm font-medium text-gray-500">Design Name</h4>
                       <p className="text-sm text-gray-900">{selectedProduct.design?.name || 'N/A'}</p>
