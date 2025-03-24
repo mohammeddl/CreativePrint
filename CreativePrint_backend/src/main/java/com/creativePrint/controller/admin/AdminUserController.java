@@ -13,9 +13,11 @@ import com.creativePrint.dto.resp.UserResponse;
 import com.creativePrint.model.User;
 import com.creativePrint.enums.Role;
 import com.creativePrint.repository.UserRepository;
+import com.creativePrint.service.UserService;
 import com.creativePrint.mapper.UserMapper;
 import com.creativePrint.exception.entitesCustomExceptions.ResourceNotFoundException;
 
+import org.apache.http.HttpStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,7 @@ public class AdminUserController {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final UserService userService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -39,7 +42,6 @@ public class AdminUserController {
 
         Page<User> usersPage;
 
-        // Apply filters if provided
         if (search != null && !search.isEmpty()) {
             usersPage = userRepository.searchUsers(search, pageable);
         } else if (role != null && !role.isEmpty()) {
@@ -53,10 +55,8 @@ public class AdminUserController {
             usersPage = userRepository.findAll(pageable);
         }
 
-        // Convert to response DTOs
         Page<UserResponse> userResponsePage = usersPage.map(userMapper::toResponse);
 
-        // Create response with pagination info
         Map<String, Object> response = new HashMap<>();
         response.put("content", userResponsePage.getContent());
         response.put("totalPages", userResponsePage.getTotalPages());
@@ -85,7 +85,6 @@ public class AdminUserController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        // Update user status
         boolean active = statusUpdate.get("active");
         user.setActive(active);
         user = userRepository.save(user);
@@ -96,15 +95,7 @@ public class AdminUserController {
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-
-        // Only allow deletion of non-admin users
-        if (user.getRole() == Role.ADMIN) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        userRepository.delete(user);
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 }

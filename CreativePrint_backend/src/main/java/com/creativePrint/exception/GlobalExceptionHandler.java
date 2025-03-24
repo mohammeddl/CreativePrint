@@ -3,6 +3,7 @@ package com.creativePrint.exception;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.creativePrint.exception.entitesCustomExceptions.*;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.http.HttpStatus;
@@ -11,12 +12,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import com.creativePrint.exception.entitesCustomExceptions.BadRequestException;
-import com.creativePrint.exception.entitesCustomExceptions.ErrorResponse;
-import com.creativePrint.exception.entitesCustomExceptions.ResourceNotFoundException;
-import com.creativePrint.exception.entitesCustomExceptions.UnauthorizedException;
-import com.creativePrint.exception.entitesCustomExceptions.UserProfileNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -46,6 +41,15 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 System.currentTimeMillis());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                "Product cannot be deleted due to existing dependencies. Product has been marked as archived.",
+                System.currentTimeMillis()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(UnauthorizedException.class)

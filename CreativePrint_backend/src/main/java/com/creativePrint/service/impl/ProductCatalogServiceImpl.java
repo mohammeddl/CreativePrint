@@ -36,14 +36,14 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
     public ProductListResponse getProductCatalog(int page, int size, String category) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
-        // Get products with or without category filter
         Page<Product> productsPage;
         if (category != null && !category.isEmpty()) {
             Categories categoryEntity = categoriesRepository.findByName(category)
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + category));
-            productsPage = productRepository.findByCategoryId(categoryEntity.getId(), pageable);
+            productsPage = (Page<Product>) productRepository.findByCategoryId(categoryEntity.getId(), pageable)
+                    .filter(p -> !p.isArchived());
         } else {
-            productsPage = productRepository.findAll(pageable);
+            productsPage = productRepository.findNonArchivedProducts(pageable);
         }
 
         // Convert entities to DTOs

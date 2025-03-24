@@ -166,20 +166,20 @@ public class PartnerProductServiceImpl implements PartnerService {
         
         return productMapper.toResponse(updatedProduct);
     }
-    @Override
+
     @Transactional
+    @Override
     public void deleteProduct(Long productId, User partner) {
-        // Find existing product
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        // Check if partner owns the product through the design
         if (!existingProduct.getDesign().getCreator().equals(partner)) {
             throw new AccessDeniedException("You don't own this product");
         }
 
-        // Delete the product
-        productRepository.delete(existingProduct);
+        // Mark as archived instead of hard deleting
+        existingProduct.setArchived(true);
+        productRepository.save(existingProduct);
     }
 
     @Override
