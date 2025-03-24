@@ -65,7 +65,6 @@ export default function ProductManagement() {
   };
 
   const handleSearch = () => {
-    // Reset to first page when searching
     dispatch(fetchAllProducts({
       page: 0,
       size: 10,
@@ -81,9 +80,8 @@ export default function ProductManagement() {
 
   const handleCategoryFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCategoryFilter(e.target.value);
-    // Apply filter immediately
     dispatch(fetchAllProducts({
-      page: 0, // Reset to first page when changing filter
+      page: 0, 
       size: 10,
       search: searchQuery,
       categoryId: e.target.value ? parseInt(e.target.value) : undefined,
@@ -93,9 +91,9 @@ export default function ProductManagement() {
 
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
-    // Apply filter immediately
+    
     dispatch(fetchAllProducts({
-      page: 0, // Reset to first page when changing filter
+      page: 0, 
       size: 10,
       search: searchQuery,
       categoryId: categoryFilter ? parseInt(categoryFilter) : undefined,
@@ -105,7 +103,6 @@ export default function ProductManagement() {
 
   const handleClearSearch = () => {
     setSearchQuery("");
-    // Fetch with empty search
     dispatch(fetchAllProducts({
       page: 0,
       size: 10,
@@ -149,7 +146,7 @@ export default function ProductManagement() {
     if (result.isConfirmed) {
       try {
         await dispatch(toggleProductArchiveStatus({ productId, archived: !isArchived }));
-        // Refresh products after toggling archive status
+        
         fetchProducts();
       } catch (error) {
         toast.error(`Failed to ${action} product`);
@@ -171,7 +168,7 @@ export default function ProductManagement() {
     if (result.isConfirmed) {
       try {
         await dispatch(deleteProduct(productId));
-        // Refresh products after deletion
+        
         fetchProducts();
       } catch (error) {
         toast.error('Failed to delete product');

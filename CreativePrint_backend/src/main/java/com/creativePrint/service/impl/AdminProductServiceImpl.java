@@ -29,7 +29,6 @@ public class AdminProductServiceImpl implements AdminProductService {
     public Map<String, Object> getAllProducts(String search, Long categoryId, String status, Pageable pageable) {
         Page<Product> productsPage;
 
-        // Apply filters if provided
         if (search != null && !search.isEmpty()) {
             productsPage = productRepository.findByNameContainingIgnoreCase(search, pageable);
         } else if (categoryId != null) {
