@@ -92,11 +92,13 @@ public class AdminProductController {
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long productId) {
-        if (!productRepository.existsById(productId)) {
-            throw new ResourceNotFoundException("Product not found with id: " + productId);
-        }
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        productRepository.deleteById(productId);
+
+        product.setArchived(true);
+        productRepository.save(product);
+
         return ResponseEntity.noContent().build();
     }
 }

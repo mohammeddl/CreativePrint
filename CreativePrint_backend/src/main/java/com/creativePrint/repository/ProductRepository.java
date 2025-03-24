@@ -5,6 +5,7 @@ import com.creativePrint.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,5 +22,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByNameContainingIgnoreCase(String search, Pageable pageable);
     long countByDesignCreator(User creator);
+
+    @Modifying
+    @Query("UPDATE Product p SET p.archived = true WHERE p.id = :productId")
+    void archiveProduct(@Param("productId") Long productId);
+
+    @Query("SELECT p FROM Product p WHERE p.archived = false")
+    Page<Product> findNonArchivedProducts(Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.archived = false AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
+    Page<Product> findNonArchivedProductsByName(@Param("search") String search, Pageable pageable);
 
 }
