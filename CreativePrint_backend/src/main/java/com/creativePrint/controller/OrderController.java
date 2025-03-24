@@ -92,4 +92,12 @@ public class OrderController {
 
         return ResponseEntity.ok(orderService.updateOrderStatus(orderId, request, user));
     }
+
+    @GetMapping("/partner")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<List<OrderResponse>> getPartnerOrders(
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(orderService.getPartnerOrders(user.getId()));
+    }
 }

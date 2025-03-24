@@ -39,6 +39,15 @@ export const orderService = {
       throw error;
     }
   },
+  getOrders: async (): Promise<Order[]> => {
+    try {
+      const response = await api.get('/orders/partner');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting orders:', error);
+      throw error;
+    }
+  },
 
   getOrderHistory: async (): Promise<Order[]> => {
     try {
