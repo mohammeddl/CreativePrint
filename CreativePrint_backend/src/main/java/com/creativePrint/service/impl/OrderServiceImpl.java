@@ -230,4 +230,12 @@ public class OrderServiceImpl implements OrderService {
         return map;
     }
 
+    @Override
+    public Page<OrderResponse> getPartnerOrders(Long partnerId, Pageable pageable) {
+        // Find orders that contain items with products designed by this partner
+        Page<Order> partnerOrders = orderRepository.findByItemsVariantProductDesignCreatorId(partnerId, pageable);
+
+        return partnerOrders.map(orderMapper::toResponse);
+    }
+
 }

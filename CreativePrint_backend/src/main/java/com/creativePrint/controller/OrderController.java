@@ -5,6 +5,11 @@ import java.util.List;
 import com.creativePrint.dto.order.req.OrderStatusUpdateRequest;
 import com.creativePrint.dto.order.resp.OrderStatusHistoryResponse;
 import com.creativePrint.enums.OrderStatus;
+import com.creativePrint.model.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -91,5 +96,14 @@ public class OrderController {
         );
 
         return ResponseEntity.ok(orderService.updateOrderStatus(orderId, request, user));
+    }
+
+    @GetMapping("/partner")
+    @PreAuthorize("hasRole('PARTNER')")
+    public ResponseEntity<Page<OrderResponse>> getPartnerOrders(
+            @AuthenticationPrincipal User user,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(orderService.getPartnerOrders(user.getId(), pageable));
     }
 }

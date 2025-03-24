@@ -67,7 +67,13 @@ public class AdminProductServiceImpl implements AdminProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
         // Update product archived status
-        product.setArchived(archived);
+        if(product.isArchived()) {
+           product.setArchived(false);
+        }else{
+            product.setArchived(true);
+        }
+
+//        product.setArchived(true);
         product = productRepository.save(product);
 
         return productMapper.toResponse(product);

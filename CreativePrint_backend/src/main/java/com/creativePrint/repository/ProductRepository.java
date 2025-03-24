@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
     Page<Product> findByDesignCreator(User creator, Pageable pageable);
+    @Query("SELECT p FROM Product p JOIN p.design d WHERE d.creator = :partner")
+    List<Product> findByDesignCreator(@Param("partner") User partner);
     @Query("SELECT p FROM Product p WHERE (p.category.id = :categoryId OR p.design.creator.id = :designerId) AND p.id != :productId")
     List<Product> findSimilarProducts(@Param("categoryId") Long categoryId, @Param("designerId") Long designerId, @Param("productId") Long productId);
     List<Product> findTop5ByOrderByCreatedAtDesc();

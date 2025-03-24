@@ -51,7 +51,7 @@ export default function ProductForm() {
             { id: 2, name: "Posters", description: "Decorative posters" },
             { id: 3, name: "Mugs", description: "Custom mugs" },
             { id: 4, name: "Phone Cases", description: "Phone cases" },
-            { id: 5, name: "Hat", description: "Custom hats" }, // Add Hat category
+            { id: 5, name: "Hat", description: "Custom hats" }, 
           ]);
         }
 
