@@ -1,0 +1,14 @@
+version: '3'
+services:
+  backend:
+    build: ./CreativePrint_backend
+    image: mohammed/creative-print-backend
+    ports:
+      - "1010:1010"
+  frontend:
+    build: ./creativePrint-frontend
+    image: mohammeddl/creative-print-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
