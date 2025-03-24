@@ -7,8 +7,6 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import Dashboard from "./Dashboard";
 import UserManagement from "./UserManagement";
 import ProductManagement from "./ProductManagement";
-import AdminSettings from "./AdminSettings";
-import AdminPermissions from "./AdminPermissions";
 
 export default function AdminDashboard() {
   const dispatch = useDispatch();
@@ -44,8 +42,6 @@ export default function AdminDashboard() {
           <Route index element={<Dashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="products" element={<ProductManagement />} />
-          <Route path="permissions" element={<AdminPermissions />} />
-          <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Routes>
     </div>

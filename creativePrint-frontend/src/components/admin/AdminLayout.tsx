@@ -7,9 +7,7 @@ import {
   BarChart2,
   LogOut,
   Menu,
-  X,
-  Settings,
-  Shield
+  X
 } from 'lucide-react';
 import { logoutUser } from '../../store/slices/userSlice';
 
@@ -23,8 +21,6 @@ export default function AdminLayout() {
     { icon: BarChart2, label: 'Dashboard', path: '/admin' },
     { icon: Users, label: 'User Management', path: '/admin/users' },
     { icon: ShoppingBag, label: 'Product Management', path: '/admin/products' },
-    { icon: Shield, label: 'Permissions', path: '/admin/permissions' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
   const handleLogout = () => {
@@ -54,11 +50,13 @@ export default function AdminLayout() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-64 bg-white shadow-md overflow-y-auto">
+        <aside className="hidden lg:flex flex-col w-64 bg-white shadow-md">
           <div className="p-6">
             <h1 className="text-2xl font-bold text-purple-600">Admin Dashboard</h1>
           </div>
-          <nav className="mt-6">
+          
+          {/* Navigation items - with overflow to allow scrolling */}
+          <nav className="mt-6 flex-1 overflow-y-auto">
             {sidebarItems.map((item) => (
               <Link
                 key={item.label}
@@ -74,7 +72,9 @@ export default function AdminLayout() {
               </Link>
             ))}
           </nav>
-          <div className="absolute bottom-0 w-64 p-6">
+          
+          {/* Logout button - stays at the bottom */}
+          <div className="border-t border-gray-200 p-6">
             <button
               onClick={handleLogout}
               className="flex items-center text-gray-600 hover:text-red-600 transition-colors"

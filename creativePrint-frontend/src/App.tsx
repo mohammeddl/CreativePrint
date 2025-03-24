@@ -23,7 +23,7 @@ function App() {
     <Provider store={store}>
       <Router>
         <Toaster position='top-right' />
-        <ShoppingCartSlideOver /> {/* Shopping cart slide-over component */}
+        <ShoppingCartSlideOver /> 
         <Routes>
           <Route path='/login' element={<LoginForm />} />
           <Route path='/register' element={<RegisterForm />} />
@@ -68,7 +68,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* Order Routes */}
           <Route
             path='/orders/history'
             element={

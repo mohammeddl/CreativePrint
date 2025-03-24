@@ -15,5 +15,6 @@ public record ProductResponse(
     DesignResponse design,
     List<com.creativePrint.dto.product.resp.ProductVariantResponse> variants,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    boolean archived
 ) {}
