@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Frontend
         run: |
-          cd CreativePrint_frontend
+          cd creativePrint-frontend
           npm install
           npm run build
 
