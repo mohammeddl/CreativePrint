@@ -20,7 +20,7 @@ public interface OrderService {
     List<OrderStatusHistoryResponse> getOrderStatusHistory(Long orderId);
     boolean canUpdateToStatus(OrderStatus currentStatus, OrderStatus newStatus);
 
-    List<OrderResponse> getPartnerOrders(Long partnerId);
+    Page<OrderResponse> getPartnerOrders(Long partnerId, Pageable pageable);
 
     Page<OrderResponse> getAllOrders(Pageable pageable);
     Page<OrderResponse> getOrdersByDesignCreator(Long partnerId, Pageable pageable);
