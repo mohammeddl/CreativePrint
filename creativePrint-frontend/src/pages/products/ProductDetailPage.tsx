@@ -358,20 +358,7 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
                 )}
-                
-                {/* Stock Display */}
-                <div className="text-sm">
-                  {selectedVariant && (
-                    isProductInStock() ? (
-                      <p className="text-green-600">
-                        In Stock ({selectedVariant.stock} available)
-                      </p>
-                    ) : (
-                      <p className="text-red-600">Out of Stock</p>
-                    )
-                  )}
-                </div>
-                
+
                 {/* Price Display */}
                 <div className="text-3xl font-bold text-gray-900 dark:text-white">
                   ${getCurrentPrice().toFixed(2)}
