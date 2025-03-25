@@ -1,9 +1,14 @@
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine as build
+WORKDIR /workspace/app
 
-WORKDIR /app
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
 
-COPY target/*.jar app.jar
+RUN ./mvnw package -DskipTests
 
-EXPOSE 1010
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+FROM eclipse-temurin:21-jre-alpine
+VOLUME /tmp
+COPY --from=build /workspace/app/target/*.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
