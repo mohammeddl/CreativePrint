@@ -17,6 +17,7 @@ import CartPage from "./pages/Cart/CartPage";
 import OrderConfirmationPage from "./pages/Cart/OrderConfirmationPage";
 import OrderHistoryPage from "./pages/orders/OrderHistoryPage";
 import OrderDetailPage from "./pages/orders/OrderDetailPage";
+import AboutPage from "./pages/about/AboutPage";
 
 function App() {
   return (
@@ -57,6 +58,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["CLIENT"]}>
                 <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='/about'
+            element={
+              <ProtectedRoute allowedRoles={["CLIENT"]}>
+                <AboutPage />
               </ProtectedRoute>
             }
           />

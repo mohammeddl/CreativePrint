@@ -165,7 +165,7 @@ export default function RegisterForm() {
           )}
 
           {/* Google Sign Up Button */}
-          <button
+          {/* <button
             onClick={handleGoogleSignUp}
             className="w-full flex items-center justify-center gap-3 p-2 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition duration-200 ease-in-out transform hover:scale-[1.01]"
           >
@@ -173,10 +173,10 @@ export default function RegisterForm() {
             <span className="font-medium text-gray-600">
               Sign up with Google
             </span>
-          </button>
+          </button> */}
 
           {/* Divider */}
-          <div className="relative">
+          {/* <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
             </div>
@@ -185,7 +185,7 @@ export default function RegisterForm() {
                 or sign up with email
               </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Register Form */}
           <form onSubmit={handleSubmit} className="space-y-4">

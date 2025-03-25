@@ -67,26 +67,8 @@ export default function LoginForm() {
               {error}
             </div>
           )}
-
-          <button
-            onClick={handleGoogleLogin}
-            className='w-full flex items-center justify-center gap-3 p-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition duration-200 ease-in-out transform hover:scale-[1.01]'>
-            <FcGoogle className='w-6 h-6' />
-            <span className='font-medium text-gray-600'>
-              Continue with Google
-            </span>
-          </button>
-
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <div className='w-full border-t border-gray-200'></div>
-            </div>
-            <div className='relative flex justify-center text-sm'>
-              <span className='px-4 bg-white text-gray-500'>
-                or continue with
-              </span>
-            </div>
-          </div>
+          
+          
 
           <form onSubmit={handleSubmit} className='space-y-4'>
             <div className='space-y-1'>
@@ -150,13 +132,7 @@ export default function LoginForm() {
                 </label>
               </div>
 
-              <div className='text-sm'>
-                <Link
-                  to='/forgot-password'
-                  className='font-medium text-purple-600 hover:text-purple-500'>
-                  Forgot password?
-                </Link>
-              </div>
+              
             </div>
 
             <button

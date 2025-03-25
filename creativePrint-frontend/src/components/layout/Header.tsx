@@ -63,7 +63,6 @@ export default function Header() {
   const getMenuItems = () => {
     const commonItems = [
       { label: "About", icon: Info, path: "/about" },
-      { label: "Contact", icon: Phone, path: "/contact" },
     ];
     
     if (userRole === "CLIENT") {
