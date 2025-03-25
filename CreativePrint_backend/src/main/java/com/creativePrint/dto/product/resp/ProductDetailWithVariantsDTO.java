@@ -1,4 +1,4 @@
-package com.creativePrint.dto.Product.resp;
+package com.creativePrint.dto.product.resp;
 
 import java.util.List;
 
