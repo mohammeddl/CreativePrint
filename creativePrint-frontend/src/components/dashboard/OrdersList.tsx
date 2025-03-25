@@ -11,13 +11,13 @@ interface OrdersListProps {
 }
 
 const OrdersList: React.FC<OrdersListProps> = ({
-  orders = [], // Default to empty array if undefined
+  orders = [],
   loading,
   onViewOrder,
   onMarkAsCompleted,
   onStartProduction
 }) => {
-  // Make sure orders is an array before attempting to use array methods
+
   const orderArray = Array.isArray(orders) ? orders : [];
 
   if (loading) {

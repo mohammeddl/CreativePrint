@@ -26,13 +26,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
 }) => {
   if (!order) return null;
 
-  // Calculate commission based on product category/name
   const calculateCommission = (productCategory: string, basePrice: number) => {
-    // Default values
     let threshold = 0;
     let commission = 0;
-    
-    // Set threshold based on category
     if (productCategory.toLowerCase().includes("shirt") || productCategory.toLowerCase().includes("t-shirt")) {
       threshold = 14;
     } else if (productCategory.toLowerCase().includes("hat") || productCategory.toLowerCase().includes("cap")) {
@@ -40,8 +36,6 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     } else if (productCategory.toLowerCase().includes("mug")) {
       threshold = 7;
     }
-    
-    // Calculate commission (70% of price above threshold)
     const commissionRate = 0.7;
     if (basePrice > threshold) {
       commission = (basePrice - threshold) * commissionRate;

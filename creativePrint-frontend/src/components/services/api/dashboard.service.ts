@@ -24,8 +24,6 @@ export const dashboardService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching dashboard statistics:", error);
-      // Return mock data if the API endpoint is not yet implemented
-      // In a production app, you should handle this differently
       return {
         totalDesigns: 0,
         totalProducts: 0,

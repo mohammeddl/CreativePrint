@@ -7,6 +7,7 @@ import OrderDetailsModal from "../../components/dashboard/OrderDetailsModal";
 import OrderStatusModal from "../../components/dashboard/OrderStatusModal";
 import OrderSearchFilter from "../../components/dashboard/OrderSearchFilter";
 import OrdersList from "../../components/dashboard/OrdersList";
+import { api } from "../../components/services/api/axios";
 
 export default function PartnerOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -29,7 +30,6 @@ export default function PartnerOrdersPage() {
       setLoading(true);
       const response = await orderService.getOrders();
       
-      // Handle both array and paginated response formats
       let responseData = Array.isArray(response) ? response : 
                         (response.content ? response.content : []);
       
@@ -111,16 +111,20 @@ export default function PartnerOrdersPage() {
     setIsUpdatingStatus(true);
     
     try {
-      // In a real application, this would call your API
-      // const response = await orderService.updateOrderStatus(selectedOrder.id, {
-      //   status: newStatus,
-      //   notes: statusNote
-      // });
+      // Create request body
+      const updateRequest = {
+        status: newStatus,
+        notes: statusNote || ''
+      };
+
+      const response = await api.patch(
+        `/partner/orders/${selectedOrder.id}/status`, 
+        updateRequest
+      );
+
+      const updatedOrder = response.data;
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Update local order status
+      // Update local state
       setOrders(prevOrders => 
         prevOrders.map(order => 
           order.id === selectedOrder.id ? { ...order, status: newStatus } : order
@@ -129,10 +133,10 @@ export default function PartnerOrdersPage() {
       
       // Add to history
       const newHistoryEntry: OrderStatusHistory = {
-        id: Math.floor(Math.random() * 1000), 
+        id: Math.floor(Math.random() * 10000), 
         orderId: selectedOrder.id,
         status: newStatus,
-        notes: statusNote,
+        notes: statusNote || '',
         updatedByName: "You", 
         timestamp: new Date().toISOString()
       };
@@ -142,21 +146,26 @@ export default function PartnerOrdersPage() {
       
       closeStatusUpdateModal();
       toast.success("Order status updated successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating order status:", error);
-      toast.error("Failed to update order status");
+      
+      if (error.response?.status === 403) {
+        toast.error("You don't have permission to update this order");
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Failed to update order status");
+      }
     } finally {
       setIsUpdatingStatus(false);
     }
   };
   
-  // Function to mark an order as "COMPLETED" directly from the order list
+  
   const markAsCompleted = async (orderId: number) => {
     try {
-      // Simulate API call delay
+
       await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Update local order status
       setOrders(prevOrders => 
         prevOrders.map(order => 
           order.id === orderId ? { ...order, status: "COMPLETED" } : order
@@ -170,7 +179,6 @@ export default function PartnerOrdersPage() {
     }
   };
   
-  // Function to move an order to production
   const startProduction = (order: Order) => {
     setSelectedOrder(order);
     setNewStatus("IN_PRODUCTION");
@@ -178,9 +186,7 @@ export default function PartnerOrdersPage() {
     setShowStatusModal(true);
   };
 
-  // Get available next statuses for the order
   const getAvailableStatuses = (currentStatus: string) => {
-    // Define allowed status transitions
     const transitionMap: {[key: string]: string[]} = {
       "PENDING": ["PENDING_PAYMENT", "CANCELLED"],
       "PENDING_PAYMENT": ["PAYMENT_RECEIVED", "PAYMENT_FAILED", "CANCELLED"],
