@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:latest
+    container_name: creative-print-db
     environment:
       - POSTGRES_DB=creative_print
       - POSTGRES_PASSWORD=0074
@@ -8,7 +9,32 @@ services:
     ports:
       - "5432:5432"  
     volumes:
-      - postgres_data:/var/lib/postgresql/data 
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - creative-print-network
+    restart: unless-stopped
+
+  backend:
+    image: ${DOCKER_HUB_USERNAME}/creative-print-backend:latest
+    container_name: creative-print-api
+    build:
+      context: ./CreativePrint_backend
+      dockerfile: Dockerfile
+    ports:
+      - "1010:1010"
+    depends_on:
+      - postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/creative_print
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=0074
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - creative-print-network
+    restart: unless-stopped
+
+networks:
+  creative-print-network:
 
 volumes:
-  postgres_data: 
+  postgres_data:

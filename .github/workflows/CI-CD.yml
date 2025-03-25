@@ -1,69 +1,48 @@
-name: CI/CD Pipeline
+name: Build and Deploy
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: [main, dev]
   pull_request:
-    branches: ["main", "dev"]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: creative-print-backend
-
+    
     steps:
-      - uses: actions/checkout@v3
-
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: "21"
-          distribution: "temurin"
+          java-version: '21'
+          distribution: 'temurin'
           cache: maven
-
+          
       - name: Make Maven wrapper executable
-        run: |
-          cd CreativePrint_backend
-          chmod +x ./mvnw
-
-      - name: Build Backend
+        run: chmod +x ./CreativePrint_backend/mvnw
+        
+      - name: Build with Maven
         run: |
           cd CreativePrint_backend
           ./mvnw clean package -DskipTests
-
-      - name: Create Dockerfile
-        run: |
-          cat > CreativePrint_backend/Dockerfile << 'ENDOFFILE'
-          FROM eclipse-temurin:21-jdk-alpine as build
-          WORKDIR /workspace/app
-
-          COPY mvnw .
-          COPY .mvn .mvn
-          COPY pom.xml .
-          COPY src src
-          COPY target/*.jar app.jar
-
-          FROM eclipse-temurin:21-jre-alpine
-          VOLUME /tmp
-          COPY --from=build /workspace/app/app.jar app.jar
-          ENTRYPOINT ["java","-jar","/app.jar"]
-          ENDOFFILE
-
+      
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          
       - name: Build and push Docker image
-        run: |
-          # Get Docker username 
-          DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
-          
-          # Build Docker image
-          docker build -t ${DOCKER_USER}/${IMAGE_NAME}:latest -t ${DOCKER_USER}/${IMAGE_NAME}:${{ github.sha }} ./CreativePrint_backend
-          
-          # Push Docker images
-          docker push ${DOCKER_USER}/${IMAGE_NAME}:latest
-          docker push ${DOCKER_USER}/${IMAGE_NAME}:${{ github.sha }}
+        uses: docker/build-push-action@v4
+        with:
+          context: ./CreativePrint_backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/creative-print-backend:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/creative-print-backend:${{ github.sha }}
+            
+      - name: Deployment Success Message
+        run: echo "✅ Build and deployment completed successfully!"
