@@ -1,6 +1,6 @@
 package com.creativePrint.controller;
 
-import com.creativePrint.dto.Product.resp.ProductDetailWithVariantsDTO;
+import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
 import com.creativePrint.dto.product.resp.ProductListResponse;
 import com.creativePrint.service.ProductCatalogService;
 import io.swagger.v3.oas.annotations.Operation;

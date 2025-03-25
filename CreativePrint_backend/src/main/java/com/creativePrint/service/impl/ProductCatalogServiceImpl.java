@@ -1,8 +1,7 @@
 package com.creativePrint.service.impl;
 
-import com.creativePrint.dto.Product.resp.ProductDetailWithVariantsDTO;
-import com.creativePrint.dto.Product.resp.ProductVariantDTO;
-import com.creativePrint.dto.category.CategoryResponse;
+import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
+import com.creativePrint.dto.product.resp.ProductVariantDTO;
 //import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
 import com.creativePrint.dto.product.resp.ProductListResponse;
 //import com.creativePrint.dto.product.resp.ProductVariantDTO;
