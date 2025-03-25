@@ -2,7 +2,6 @@ import { CheckCircle, MessageCircle, Truck, X } from "lucide-react";
 import { Order, OrderStatusHistory } from "../../types/order";
 import { orderService } from "../services/api/order.service";
 import toast from "react-hot-toast";
-import { calculateCommission } from "../../utils/commissionUtils";
 
 interface OrderDetailsModalProps {
   order: Order | null;
@@ -26,6 +25,30 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   getAvailableStatuses
 }) => {
   if (!order) return null;
+
+  // Calculate commission based on product category/name
+  const calculateCommission = (productCategory: string, basePrice: number) => {
+    // Default values
+    let threshold = 0;
+    let commission = 0;
+    
+    // Set threshold based on category
+    if (productCategory.toLowerCase().includes("shirt") || productCategory.toLowerCase().includes("t-shirt")) {
+      threshold = 14;
+    } else if (productCategory.toLowerCase().includes("hat") || productCategory.toLowerCase().includes("cap")) {
+      threshold = 8;
+    } else if (productCategory.toLowerCase().includes("mug")) {
+      threshold = 7;
+    }
+    
+    // Calculate commission (70% of price above threshold)
+    const commissionRate = 0.7;
+    if (basePrice > threshold) {
+      commission = (basePrice - threshold) * commissionRate;
+    }
+    
+    return { commission, threshold };
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -60,7 +83,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                   </div>
                   <div>
                     <p className="text-xs text-gray-500">Total</p>
-                    <p className="text-sm font-medium text-gray-900">${order.totalPrice.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-900">${order.totalPrice?.toFixed(2) || '0.00'}</p>
                   </div>
                 </div>
               </div>
@@ -70,9 +93,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
               <h4 className="text-sm font-medium text-gray-700 mb-2">Customer Information</h4>
               <div className="bg-gray-50 rounded-md p-4">
                 <p className="text-sm font-medium text-gray-900">
-                  {order.buyer.firstName} {order.buyer.lastName}
+                  {order.buyer?.firstName || ''} {order.buyer?.lastName || ''}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">{order.buyer.email}</p>
+                <p className="text-sm text-gray-500 mt-1">{order.buyer?.email || ''}</p>
               </div>
             </div>
           </div>
@@ -80,27 +103,34 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <h4 className="text-sm font-medium text-gray-700 mb-2">Order Items</h4>
           <div className="bg-gray-50 rounded-md p-4 mb-6">
             <ul className="divide-y divide-gray-200">
-              {order.items.map((item) => (
+              {(order.items || []).map((item) => (
                 <li key={item.id} className="py-3 flex first:pt-0 last:pb-0">
                   <div className="w-12 h-12 bg-gray-200 rounded flex-shrink-0"></div>
                   <div className="ml-4 flex-1">
                     <p className="text-sm font-medium text-gray-900">
-                      {item.variant.product?.name}
+                      {item.variant?.product?.name || 'Unknown Product'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {item.variant.size}, {item.variant.color}
+                      {item.variant?.size || 'N/A'}, {item.variant?.color || 'N/A'}
                     </p>
                     <div className="flex justify-between mt-1">
                       <p className="text-xs text-gray-500">
-                        Qty: {item.quantity}
+                        Qty: {item.quantity || 0}
                       </p>
                       <p className="text-xs font-medium text-gray-900">
-                        ${item.variant.product ? ((item.variant.product.basePrice + item.variant.priceAdjustment) * item.quantity).toFixed(2) : 'N/A'}
+                        ${item.variant?.product ? 
+                          ((item.variant.product.basePrice || 0) + (item.variant.priceAdjustment || 0)) * (item.quantity || 0)
+                          : 'N/A'}
                       </p>
                     </div>
                   </div>
                 </li>
               ))}
+              {!order.items?.length && (
+                <li className="py-3 text-center text-sm text-gray-500">
+                  No items in this order
+                </li>
+              )}
             </ul>
           </div>
           
@@ -123,7 +153,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    Updated by: {history.updatedByName}
+                    Updated by: {history.updatedByName || 'Unknown'}
                   </p>
                 </li>
               ))}
@@ -139,15 +169,18 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <h4 className="text-sm font-medium text-gray-700 mb-2 mt-6">Commission Details</h4>
           <div className="bg-gray-50 rounded-md p-4">
             <div className="space-y-3">
-              {order.items.map((item, index) => {
-                const basePrice = item.variant.product.basePrice + item.variant.priceAdjustment;
-                const total = basePrice * item.quantity;
+              {(order.items || []).map((item, index) => {
+                // Safely get properties with fallbacks
+                const basePrice = (item.variant?.product?.basePrice || 0) + (item.variant?.priceAdjustment || 0);
+                const quantity = item.quantity || 1;
+                const total = basePrice * quantity;
                 
-                // Calculate threshold based on product category/name
-                const productName = item.variant.product.name.toLowerCase();
-                const productCategory = typeof item.variant.product.category === 'string' 
-                  ? item.variant.product.category.toLowerCase()
-                  : item.variant.product.category.name.toLowerCase();
+                // Get product category or name for commission calculation
+                const productName = item.variant?.product?.name?.toLowerCase() || '';
+                const productCategory = 
+                  typeof item.variant?.product?.category === 'string' 
+                    ? item.variant.product.category.toLowerCase()
+                    : item.variant?.product?.category?.name?.toLowerCase() || '';
                 
                 const { commission, threshold } = calculateCommission(
                   productCategory || productName, 
@@ -155,12 +188,12 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 );
                 
                 // Calculate total commission for all quantity
-                const totalCommission = commission * item.quantity;
+                const totalCommission = commission * quantity;
                 
                 return (
                   <div key={index} className="p-2 bg-white rounded border border-gray-100">
                     <p className="text-sm font-medium text-gray-800">
-                      {item.variant.product.name} ({item.quantity} x ${basePrice.toFixed(2)})
+                      {item.variant?.product?.name || 'Product'} ({quantity} x ${basePrice.toFixed(2)})
                     </p>
                     <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
                       <div>
@@ -176,7 +209,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <span className="ml-1 font-medium text-green-600">
                           ${totalCommission.toFixed(2)} 
                           {basePrice > threshold ? 
-                            ` (${((basePrice - threshold) * 0.7).toFixed(2)} per item)` : 
+                            ` (${commission.toFixed(2)} per item)` : 
                             " (minimum price)"}
                         </span>
                       </div>
@@ -185,17 +218,24 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 );
               })}
               
+              {!order.items?.length && (
+                <div className="p-2 text-center text-sm text-gray-500">
+                  No commission details available
+                </div>
+              )}
+              
               <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between">
                 <span className="text-sm font-medium text-gray-700">Total Commission:</span>
                 <span className="text-sm font-bold text-green-600">
-                  ${order.items.reduce((total, item) => {
-                    const basePrice = item.variant.product.basePrice + item.variant.priceAdjustment;
-                    const productCategory = typeof item.variant.product.category === 'string' 
-                      ? item.variant.product.category.toLowerCase()
-                      : item.variant.product.category.name.toLowerCase();
+                  ${(order.items || []).reduce((total, item) => {
+                    const basePrice = (item.variant?.product?.basePrice || 0) + (item.variant?.priceAdjustment || 0);
+                    const productCategory = 
+                      typeof item.variant?.product?.category === 'string' 
+                        ? item.variant.product.category.toLowerCase()
+                        : item.variant?.product?.category?.name?.toLowerCase() || '';
                     
                     const { commission } = calculateCommission(productCategory, basePrice);
-                    return total + (commission * item.quantity);
+                    return total + (commission * (item.quantity || 1));
                   }, 0).toFixed(2)}
                 </span>
               </div>
