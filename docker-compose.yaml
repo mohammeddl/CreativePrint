@@ -2,7 +2,7 @@ version: '3'
 services:
   backend:
     build: ./CreativePrint_backend
-    image: mohammed/creative-print-backend
+    image: docker.io/mohammed/creative-print-backend
     ports:
       - "1010:1010"
     environment:
