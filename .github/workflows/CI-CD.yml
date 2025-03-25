@@ -20,6 +20,11 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      - name: Make Maven wrapper executable
+        run: |
+          cd CreativePrint_backend
+          chmod +x ./mvnw
+
       - name: Build Backend
         run: |
           cd CreativePrint_backend
