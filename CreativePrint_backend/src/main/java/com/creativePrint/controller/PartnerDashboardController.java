@@ -41,15 +41,13 @@ public class PartnerDashboardController {
     public ResponseEntity<Map<String, Object>> getDashboardStats(@AuthenticationPrincipal User partner) {
         Map<String, Object> stats = new HashMap<>();
 
-        // Count total designs
         long totalDesigns = designRepository.countByCreator(partner);
         stats.put("totalDesigns", totalDesigns);
 
-        // Count total products
         long totalProducts = productRepository.countByDesignCreator(partner);
         stats.put("totalProducts", totalProducts);
 
-        // Get orders with partner's designs
+
         List<Order> partnerOrders = orderRepository.findByItemsVariantProductDesignCreatorId(partner.getId());
         stats.put("totalOrders", partnerOrders.size());
 
@@ -80,7 +78,7 @@ public class PartnerDashboardController {
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // Create entries for the last 7 days
+
         for (int i = 6; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
             Map<String, Object> daySales = new HashMap<>();
@@ -99,14 +97,14 @@ public class PartnerDashboardController {
                 continue;
             }
 
-            // Convert order creation date to LocalDate
+
             LocalDate orderDate = Instant.ofEpochMilli(order.getCreatedAt().toEpochMilli())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDate();
 
-            // Check if the order is within the last 7 days
+
             if (orderDate.isAfter(today.minusDays(7).minusDays(1))) {
-                // Find the matching day in our result list
+
                 for (Map<String, Object> daySales : result) {
                     if (daySales.get("date").equals(orderDate.toString())) {
                         double currentAmount = (double) daySales.get("amount");

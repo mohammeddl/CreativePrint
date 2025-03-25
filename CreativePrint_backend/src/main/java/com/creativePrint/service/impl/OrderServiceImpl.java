@@ -4,9 +4,12 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.creativePrint.dto.order.req.OrderStatusUpdateRequest;
 import com.creativePrint.dto.order.resp.OrderStatusHistoryResponse;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.enums.InteractionType;
 import com.creativePrint.exception.entitesCustomExceptions.BadRequestException;
 import com.creativePrint.model.*;
@@ -195,7 +198,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<OrderResponse> getOrdersByDesignCreator(Long partnerId, Pageable pageable) {
-        // This requires a custom repository method - we'll need to add this to OrderRepository
         return orderRepository.findByItemsVariantProductDesignCreatorId(partnerId, pageable)
                 .map(orderMapper::toResponse);
     }
@@ -237,5 +239,6 @@ public class OrderServiceImpl implements OrderService {
 
         return partnerOrders.map(orderMapper::toResponse);
     }
+
 
 }

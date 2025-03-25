@@ -83,13 +83,11 @@ public class OrderController {
     public ResponseEntity<OrderResponse> cancelOrder(
             @PathVariable Long orderId,
             @AuthenticationPrincipal User user) {
-        // Verify the order belongs to the user
         OrderResponse order = orderService.getOrderById(orderId);
         if (!order.buyer().id().equals(user.getId())) {
             throw new AccessDeniedException("You can only cancel your own orders");
         }
 
-        // Client can only cancel if order is in PENDING, PENDING_PAYMENT, or PAYMENT_FAILED state
         OrderStatusUpdateRequest request = new OrderStatusUpdateRequest(
                 OrderStatus.CANCELLED,
                 "Cancelled by client"

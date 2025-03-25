@@ -7,6 +7,7 @@ import com.creativePrint.dto.order.req.OrderRequest;
 import com.creativePrint.dto.order.req.OrderStatusUpdateRequest;
 import com.creativePrint.dto.order.resp.OrderResponse;
 import com.creativePrint.dto.order.resp.OrderStatusHistoryResponse;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.enums.OrderStatus;
 import com.creativePrint.model.User;
 import org.springframework.data.domain.Page;
@@ -25,4 +26,6 @@ public interface OrderService {
     Page<OrderResponse> getAllOrders(Pageable pageable);
     Page<OrderResponse> getOrdersByDesignCreator(Long partnerId, Pageable pageable);
     boolean isOrderContainingPartnerDesigns(Long orderId, Long partnerId);
+
+
 }
