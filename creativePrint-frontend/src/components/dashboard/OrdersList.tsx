@@ -3,7 +3,7 @@ import { Order } from "../../types/order";
 import { orderService } from "../services/api/order.service";
 
 interface OrdersListProps {
-  orders: Order[];
+  orders: Order[] | undefined;
   loading: boolean;
   onViewOrder: (order: Order) => void;
   onMarkAsCompleted: (orderId: number) => void;
@@ -11,12 +11,15 @@ interface OrdersListProps {
 }
 
 const OrdersList: React.FC<OrdersListProps> = ({
-  orders,
+  orders = [], // Default to empty array if undefined
   loading,
   onViewOrder,
   onMarkAsCompleted,
   onStartProduction
 }) => {
+  // Make sure orders is an array before attempting to use array methods
+  const orderArray = Array.isArray(orders) ? orders : [];
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -25,7 +28,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
     );
   }
 
-  if (orders.length === 0) {
+  if (!orderArray.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
         <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
@@ -68,7 +71,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {orders.map((order) => (
+          {orderArray.map((order) => (
             <tr key={order.id} className="hover:bg-gray-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 #{order.id}
@@ -77,10 +80,10 @@ const OrdersList: React.FC<OrdersListProps> = ({
                 {order.buyer.firstName} {order.buyer.lastName}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+                {order.items?.length || 0} {(order.items?.length || 0) === 1 ? 'item' : 'items'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                ${order.totalPrice.toFixed(2)}
+                ${order.totalPrice?.toFixed(2) || '0.00'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className={`px-2 py-1 text-xs rounded-full ${orderService.getStatusColor(order.status)}`}>
