@@ -1,11 +1,13 @@
 package com.creativePrint.service.impl;
 
 import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
+import com.creativePrint.dto.product.resp.ProductResponse;
 import com.creativePrint.dto.product.resp.ProductVariantDTO;
 //import com.creativePrint.dto.product.resp.ProductDetailWithVariantsDTO;
 import com.creativePrint.dto.product.resp.ProductListResponse;
 //import com.creativePrint.dto.product.resp.ProductVariantDTO;
 import com.creativePrint.exception.entitesCustomExceptions.ResourceNotFoundException;
+import com.creativePrint.mapper.ProductMapper;
 import com.creativePrint.model.Categories;
 import com.creativePrint.model.Product;
 import com.creativePrint.model.ProductVariant;
@@ -29,6 +31,7 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
 
     private final ProductRepository productRepository;
     private final CategoriesRepository categoriesRepository;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -48,12 +51,10 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
             productsPage = productRepository.findNonArchivedProducts(pageable);
         }
 
-        // Convert entities to DTOs
         List<ProductListResponse.ProductDTO> productDTOs = productsPage.getContent().stream()
                 .map(this::enhanceProductDTO)
                 .collect(Collectors.toList());
 
-        // Get all unique category names
         List<String> allCategories = categoriesRepository.findAll().stream()
                 .map(Categories::getName)
                 .collect(Collectors.toList());
@@ -82,7 +83,6 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
 
-        // Convert product variants to DTOs
         List<ProductVariantDTO> variantDTOs = product.getVariants().stream()
                 .map(this::mapToVariantDTO)
                 .collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
                 product.getName(),
                 product.getDescription(),
                 product.getBasePrice(),
-                product.getDesign().getDesignUrl(), // Use design image URL
+                product.getDesign().getDesignUrl(),
                 product.getCategory().getName(),
                 isProductHot(product),
                 variantDTOs
@@ -109,16 +109,11 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         );
     }
 
-    /**
-     * Adds additional fields to the basic DTO conversion
-     */
     private ProductListResponse.ProductDTO enhanceProductDTO(Product product) {
         ProductListResponse.ProductDTO dto = ProductListResponse.ProductDTO.fromEntity(product);
 
-        // Logic to determine if a product is "hot" - for example, new products or products with high sales
         boolean isHot = isProductHot(product);
 
-        // Create a new DTO with the isHot flag set
         return new ProductListResponse.ProductDTO(
                 dto.id(),
                 dto.name(),
@@ -131,15 +126,12 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         );
     }
 
-    /**
-     * Determines if a product should be labeled as "hot"
-     */
     private boolean isProductHot(Product product) {
-        // This is a placeholder implementation - replace with your business logic
-        // For example, products less than 7 days old could be considered "hot"
         return java.time.Duration.between(
                 product.getCreatedAt(),
                 java.time.Instant.now()
         ).toDays() < 7;
     }
+
+
 }
