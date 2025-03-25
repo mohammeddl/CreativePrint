@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     List<OrderItem> findByVariantIn(List<ProductVariant> variants);
+
+    long countByVariantId(Long variantId);
 }

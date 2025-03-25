@@ -1,5 +1,6 @@
 package com.creativePrint.service.impl;
 
+import com.creativePrint.repository.OrderItemRepository;
 import org.springframework.stereotype.Service;
 
 import com.creativePrint.dto.design.req.DesignRequest;
@@ -31,7 +32,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -44,6 +47,7 @@ public class PartnerProductServiceImpl implements PartnerService {
     private final DesignRepository designRepository;
     private final CategoriesRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
+    private final OrderItemRepository orderItemRepository;
 
     @Override
     @Transactional
@@ -76,23 +80,22 @@ public class PartnerProductServiceImpl implements PartnerService {
         if (!design.getCreator().equals(partner)) {
             throw new AccessDeniedException("You don't own this design");
         }
-    
-        // Create product (ignore variants from the mapper)
+
         Product product = productMapper.toEntity(request);
         product.setCategory(category);
         product.setDesign(design);
         product.setCreatedAt(Instant.now());
         product.setUpdatedAt(Instant.now());
         
-        // Initialize variants collection
+
         if (product.getVariants() == null) {
             product.setVariants(new HashSet<>());
         }
     
-        // First save the product to get an ID
+
         Product savedProduct = productRepository.save(product);
         
-        // Now create and add variants with the saved product
+
         Set<ProductVariant> variants = new HashSet<>();
         for (ProductVariantRequest variantRequest : request.variants()) {
             ProductVariant variant = ProductVariant.builder()
@@ -104,28 +107,27 @@ public class PartnerProductServiceImpl implements PartnerService {
                     .build();
             variants.add(variant);
         }
-        
-        // Set all variants at once
+
         savedProduct.setVariants(variants);
         
-        // Save again to persist the variants
+
         savedProduct = productRepository.save(savedProduct);
         
         return productMapper.toResponse(savedProduct);
     }
-    
+
     @Override
     @Transactional
     public ProductResponse updateProduct(Long productId, ProductRequest request, User partner) {
         // Find existing product
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-    
+
         // Check if partner owns the product through the design
         if (!existingProduct.getDesign().getCreator().equals(partner)) {
             throw new AccessDeniedException("You don't own this product");
         }
-    
+
         // Fetch category and design
         Categories category = categoryRepository.findById(request.categoryId())
                 .orElseThrow(() -> new EntityNotFoundException("Category not found"));
@@ -134,7 +136,7 @@ public class PartnerProductServiceImpl implements PartnerService {
         if (!design.getCreator().equals(partner)) {
             throw new AccessDeniedException("You don't own this design");
         }
-    
+
         // Update product details
         existingProduct.setName(request.name());
         existingProduct.setDescription(request.description());
@@ -142,30 +144,66 @@ public class PartnerProductServiceImpl implements PartnerService {
         existingProduct.setCategory(category);
         existingProduct.setDesign(design);
         existingProduct.setUpdatedAt(Instant.now());
-    
-        // Get a reference to the current variants (important for orphan removal)
-        Set<ProductVariant> currentVariants = new HashSet<>(existingProduct.getVariants());
-        
-        // Remove all current variants
-        currentVariants.forEach(variant -> existingProduct.getVariants().remove(variant));
-        
-        // Create and add new variants
-        request.variants().forEach(variantRequest -> {
-            ProductVariant variant = ProductVariant.builder()
-                    .size(variantRequest.size())
-                    .color(variantRequest.color())
-                    .priceAdjustment(variantRequest.priceAdjustment())
-                    .stock(variantRequest.stock())
-                    .product(existingProduct)
-                    .build();
-            existingProduct.getVariants().add(variant);
-        });
-        
+
+        Map<String, ProductVariant> existingVariantsMap = existingProduct.getVariants().stream()
+                .collect(Collectors.toMap(
+                        v -> v.getSize() + "-" + v.getColor(),
+                        v -> v,
+                        (v1, v2) -> v1
+                ));
+
+        // Track which variants to keep
+        Set<ProductVariant> variantsToKeep = new HashSet<>();
+
+        // Process new variant requests
+        for (ProductVariantRequest variantRequest : request.variants()) {
+            String variantKey = variantRequest.size() + "-" + variantRequest.color();
+
+            if (existingVariantsMap.containsKey(variantKey)) {
+                // Update existing variant
+                ProductVariant existingVariant = existingVariantsMap.get(variantKey);
+                existingVariant.setPriceAdjustment(variantRequest.priceAdjustment());
+                existingVariant.setStock(variantRequest.stock());
+                variantsToKeep.add(existingVariant);
+            } else {
+                // Create new variant
+                ProductVariant newVariant = ProductVariant.builder()
+                        .size(variantRequest.size())
+                        .color(variantRequest.color())
+                        .priceAdjustment(variantRequest.priceAdjustment())
+                        .stock(variantRequest.stock())
+                        .product(existingProduct)
+                        .build();
+                variantsToKeep.add(newVariant);
+            }
+        }
+
+        // Find variants to remove (those in existingVariants but not in variantsToKeep)
+        Set<ProductVariant> variantsToRemove = new HashSet<>(existingProduct.getVariants());
+        variantsToRemove.removeAll(variantsToKeep);
+
+        // Check if variants to remove are used in orders
+        for (ProductVariant variant : variantsToRemove) {
+            if (variant.getId() != null) {
+                long orderItemCount = orderItemRepository.countByVariantId(variant.getId());
+                if (orderItemCount > 0) {
+                    // If variant is used in orders, mark it as out of stock instead of removing
+                    variant.setStock(0);
+                    variantsToKeep.add(variant);
+                }
+            }
+        }
+
+        // Update the product's variants
+        existingProduct.getVariants().clear();
+        existingProduct.getVariants().addAll(variantsToKeep);
+
         // Save updated product
         Product updatedProduct = productRepository.save(existingProduct);
-        
+
         return productMapper.toResponse(updatedProduct);
     }
+
 
     @Transactional
     @Override
@@ -177,7 +215,6 @@ public class PartnerProductServiceImpl implements PartnerService {
             throw new AccessDeniedException("You don't own this product");
         }
 
-        // Mark as archived instead of hard deleting
         existingProduct.setArchived(true);
         productRepository.save(existingProduct);
     }
@@ -209,7 +246,7 @@ public class PartnerProductServiceImpl implements PartnerService {
     @Transactional(readOnly = true)
     public Page<ProductResponse> getAllProducts(Pageable pageable, String search) {
         if (search != null && !search.trim().isEmpty()) {
-            // Implement search logic, for example:
+
             return productRepository.findByNameContainingIgnoreCase(search, pageable)
                     .map(productMapper::toResponse);
         }
