@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_REGISTRY: docker.io
+      IMAGE_NAME: creative-print-backend
 
     steps:
       - uses: actions/checkout@v3
@@ -36,14 +39,34 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Create Dockerfile if it doesn't exist
+        run: |
+          if [ ! -f CreativePrint_backend/Dockerfile ]; then
+            cat > CreativePrint_backend/Dockerfile << 'EOF'
+            FROM eclipse-temurin:21-jdk-alpine as build
+            WORKDIR /workspace/app
 
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./CreativePrint_backend
-          push: true
-          tags: |
-            ${{ secrets.DOCKER_USERNAME }}/creative-print-backend:latest
-            ${{ secrets.DOCKER_USERNAME }}/creative-print-backend:${{ github.sha }}
+            COPY mvnw .
+            COPY .mvn .mvn
+            COPY pom.xml .
+            COPY src src
+            COPY target/*.jar app.jar
+
+            FROM eclipse-temurin:21-jre-alpine
+            VOLUME /tmp
+            COPY --from=build /workspace/app/app.jar app.jar
+            ENTRYPOINT ["java","-jar","/app.jar"]
+            EOF
+          fi
+
+      - name: Build and push Docker image
+        run: |
+          # Get Docker username (without using the secret directly in command)
+          DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
+          
+          # Build Docker image
+          docker build -t ${DOCKER_USER}/${IMAGE_NAME}:latest -t ${DOCKER_USER}/${IMAGE_NAME}:${{ github.sha }} ./CreativePrint_backend
+          
+          # Push Docker images
+          docker push ${DOCKER_USER}/${IMAGE_NAME}:latest
+          docker push ${DOCKER_USER}/${IMAGE_NAME}:${{ github.sha }}
