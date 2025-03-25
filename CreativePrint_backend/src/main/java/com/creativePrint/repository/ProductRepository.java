@@ -32,6 +32,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.archived = false")
     Page<Product> findNonArchivedProducts(Pageable pageable);
 
+    Page<Product> findByCategoryIdAndArchived(Long categoryId, boolean archived, Pageable pageable);
     @Query("SELECT p FROM Product p WHERE p.archived = false AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Product> findNonArchivedProductsByName(@Param("search") String search, Pageable pageable);
 

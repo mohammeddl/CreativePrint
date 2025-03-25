@@ -39,8 +39,11 @@ public class ProductCatalogServiceImpl implements ProductCatalogService {
         if (category != null && !category.isEmpty()) {
             Categories categoryEntity = categoriesRepository.findByName(category)
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + category));
-            productsPage = (Page<Product>) productRepository.findByCategoryId(categoryEntity.getId(), pageable)
-                    .filter(p -> !p.isArchived());
+            productsPage = productRepository.findByCategoryIdAndArchived(
+                    categoryEntity.getId(),
+                    false,
+                    pageable
+            );
         } else {
             productsPage = productRepository.findNonArchivedProducts(pageable);
         }

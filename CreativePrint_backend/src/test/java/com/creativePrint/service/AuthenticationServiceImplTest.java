@@ -88,7 +88,7 @@ public class AuthenticationServiceImplTest {
                 .thenReturn(authentication);
         when(userRepository.findByEmail(loginRequest.email())).thenReturn(Optional.of(testUser));
         when(jwtService.generateToken(testUser)).thenReturn("test-jwt-token");
-        
+
         AuthResponse response = authenticationService.login(loginRequest);
 
 
@@ -145,7 +145,7 @@ public class AuthenticationServiceImplTest {
                 .build();
 
         when(tokenRepository.findByToken(token)).thenReturn(Optional.of(storedToken));
-        
+
         authenticationService.logout(token);
 
 
