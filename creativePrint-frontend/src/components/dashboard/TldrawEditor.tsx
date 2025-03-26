@@ -6,7 +6,6 @@ declare global {
   }
 }
 import { Tldraw } from "@tldraw/tldraw";
-// import '@tldraw/tldraw/dist/tldraw.css';
 import { ArrowLeft, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -14,11 +13,9 @@ import toast from "react-hot-toast";
 const TldrawEditor = () => {
   const navigate = useNavigate();
 
-  // Handle tool selection
   const handleMount = useCallback((app: any) => {
     window.app = app;
 
-    // Setup custom export button
     const exportButton = document.getElementById("export-button");
     if (exportButton) {
       exportButton.addEventListener("click", () => {

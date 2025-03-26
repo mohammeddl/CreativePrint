@@ -28,7 +28,7 @@ public class PartnerOrderController {
     public ResponseEntity<Page<OrderResponse>> getPartnerOrders(
             @AuthenticationPrincipal User partner,
             @PageableDefault(size = 20) Pageable pageable) {
-        // Get orders containing products with designs created by this partner
+
         return ResponseEntity.ok(orderService.getOrdersByDesignCreator(partner.getId(), pageable));
     }
 
@@ -38,7 +38,6 @@ public class PartnerOrderController {
             @PathVariable Long orderId,
             @RequestBody @Valid OrderStatusUpdateRequest request,
             @AuthenticationPrincipal User partner) {
-        // Verify this order contains partner's products before allowing update
         if (!orderService.isOrderContainingPartnerDesigns(orderId, partner.getId())) {
             throw new AccessDeniedException("You can only update orders containing your designs");
         }

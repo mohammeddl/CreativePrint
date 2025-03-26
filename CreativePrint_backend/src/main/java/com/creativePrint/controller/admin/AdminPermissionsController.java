@@ -19,10 +19,10 @@ public class AdminPermissionsController {
     @GetMapping("/roles")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Map<String, Object>>> getAllRoles() {
-        // In a real application, you would retrieve roles from a database
+        
         List<Map<String, Object>> roles = new ArrayList<>();
 
-        // Admin role
+        
         Map<String, Object> adminRole = new HashMap<>();
         adminRole.put("id", 1);
         adminRole.put("name", "ADMIN");
@@ -30,7 +30,7 @@ public class AdminPermissionsController {
         adminRole.put("permissions", Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12));
         roles.add(adminRole);
 
-        // Client role
+        
         Map<String, Object> clientRole = new HashMap<>();
         clientRole.put("id", 2);
         clientRole.put("name", "CLIENT");
@@ -38,7 +38,7 @@ public class AdminPermissionsController {
         clientRole.put("permissions", Arrays.asList(1, 5, 9));
         roles.add(clientRole);
 
-        // Partner role
+        
         Map<String, Object> partnerRole = new HashMap<>();
         partnerRole.put("id", 3);
         partnerRole.put("name", "PARTNER");

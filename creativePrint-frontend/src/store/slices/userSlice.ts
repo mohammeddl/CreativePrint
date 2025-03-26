@@ -14,7 +14,6 @@ const initialState: UserState = {
   expiresAt: null
 }
 
-// Login Thunk
 export const loginUser = createAsyncThunk(
   "user/login",
   async (credentials: LoginFormData, { rejectWithValue }) => {
@@ -27,7 +26,6 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Register Thunk
 export const registerUser = createAsyncThunk(
   "user/register",
   async (registrationData: RegisterFormData, { rejectWithValue }) => {
@@ -40,7 +38,6 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Logout Thunk
 export const logoutUser = createAsyncThunk(
   "user/logout",
   async (_, { rejectWithValue }) => {
@@ -52,7 +49,6 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-// Fetch Current User Thunk
 export const fetchCurrentUser = createAsyncThunk(
   "user/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
@@ -90,7 +86,6 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Login Cases
     builder
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -117,7 +112,7 @@ const userSlice = createSlice({
           firstName,
           lastName,
           email,
-          themePreference: 'light' // default theme
+          themePreference: 'light'
         };
         state.expiresAt = expiresAt;
       })
@@ -130,8 +125,6 @@ const userSlice = createSlice({
         state.userId = null;
         state.expiresAt = null;
       })
-
-      // Register Cases
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -170,8 +163,6 @@ const userSlice = createSlice({
         state.userId = null;
         state.expiresAt = null;
       })
-
-      // Logout Cases
       .addCase(logoutUser.pending, (state) => {
         state.loading = true;
       })
@@ -188,8 +179,6 @@ const userSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-      // Fetch Current User Cases
       .addCase(fetchCurrentUser.pending, (state) => {
         state.loading = true;
       })

@@ -1,4 +1,3 @@
-// src/store/slices/adminSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
 import type { AdminState, ApproveRejectProductPayload } from "../../types/admin"
 import { adminService } from "../../components/services/api/admin.service"
@@ -156,8 +155,6 @@ const adminSlice = createSlice({
           state.statistics.totalProducts += 1
         }
       })
-      
-      // Handle fetch all products
       .addCase(fetchAllProducts.pending, (state) => {
         state.loading = true
         state.error = null
@@ -176,7 +173,6 @@ const adminSlice = createSlice({
         state.error = action.error.message || "Failed to fetch products"
       })
       
-      // Handle fetch all users
       .addCase(fetchAllUsers.pending, (state) => {
         state.loading = true
         state.error = null
@@ -195,15 +191,12 @@ const adminSlice = createSlice({
         state.error = action.error.message || "Failed to fetch users"
       })
       
-      // Handle product archive toggle
       .addCase(toggleProductArchiveStatus.fulfilled, (state, action) => {
         const { productId, archived } = action.payload
         state.allProducts = state.allProducts.map(product => 
           product.id === productId ? { ...product, archived } : product
         )
       })
-      
-      // Handle user active status toggle
       .addCase(toggleUserActiveStatus.fulfilled, (state, action) => {
         const { userId, active } = action.payload
         state.users = state.users.map(user => 
@@ -211,12 +204,10 @@ const adminSlice = createSlice({
         )
       })
       
-      // Handle product deletion
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.allProducts = state.allProducts.filter(product => product.id !== action.payload)
       })
-      
-      // Handle user deletion
+
       .addCase(deleteUser.fulfilled, (state, action) => {
         state.users = state.users.filter(user => user.id !== action.payload)
       })

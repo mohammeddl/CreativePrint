@@ -57,7 +57,7 @@ public class OrderController {
     public ResponseEntity<OrderResponse> getOrderDetails(
             @PathVariable Long orderId,
             @AuthenticationPrincipal User user) {
-        // Verify the order belongs to the user
+        
         OrderResponse order = orderService.getOrderById(orderId);
         if (!order.buyer().id().equals(user.getId())) {
             throw new AccessDeniedException("You can only view your own orders");
@@ -70,7 +70,7 @@ public class OrderController {
     public ResponseEntity<List<OrderStatusHistoryResponse>> getOrderStatusHistory(
             @PathVariable Long orderId,
             @AuthenticationPrincipal User user) {
-        // Verify the order belongs to the user
+        
         OrderResponse order = orderService.getOrderById(orderId);
         if (!order.buyer().id().equals(user.getId())) {
             throw new AccessDeniedException("You can only view history for your own orders");

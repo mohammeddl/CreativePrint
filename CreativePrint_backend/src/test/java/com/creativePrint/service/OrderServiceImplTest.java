@@ -120,7 +120,7 @@ public class OrderServiceImplTest {
                 .id(1L)
                 .buyer(testUser)
                 .items(List.of(orderItem))
-                .totalPrice(69.98) // (29.99 + 5.00) * 2
+                .totalPrice(69.98) 
                 .status(OrderStatus.PENDING)
                 .createdAt(Instant.now())
                 .build();

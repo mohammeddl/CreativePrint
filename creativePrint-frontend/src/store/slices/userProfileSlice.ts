@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { api } from '../../components/services/api/axios'
 import toast from 'react-hot-toast'
 
-// Define the initial state interface
 interface UserProfileState {
   loading: boolean
   error: string | null
@@ -14,19 +13,16 @@ interface UserProfileState {
   } | null
 }
 
-// Initial state
 const initialState: UserProfileState = {
   loading: false,
   error: null,
   profile: null
 }
 
-// Async thunk for updating user profile
 export const updateUserProfile = createAsyncThunk(
   'userProfile/update',
   async ({ userId, formData }: { userId: string, formData: FormData }, { rejectWithValue }) => {
     try {
-      // Import here to avoid circular dependency
       const { userProfileService } = await import('../../components/services/api/userProfile.service')
       const data = await userProfileService.updateUserProfile(userId, formData)
       toast.success('Profile updated successfully!')
@@ -39,17 +35,13 @@ export const updateUserProfile = createAsyncThunk(
   }
 )
 
-// Async thunk for fetching user profile
 export const fetchUserProfile = createAsyncThunk(
   'userProfile/fetch',
   async (userId: string, { rejectWithValue, getState }) => {
     try {
-      // Double-check that we have a userId
       if (!userId) {
         const state = getState() as any;
         userId = state.user.userId;
-        
-        // If still no userId, reject
         if (!userId) {
           return rejectWithValue('User ID not found');
         }
@@ -64,7 +56,6 @@ export const fetchUserProfile = createAsyncThunk(
     }
   }
 );
-// Create the slice
 const userProfileSlice = createSlice({
   name: 'userProfile',
   initialState,
@@ -76,7 +67,6 @@ const userProfileSlice = createSlice({
     }
   },
   extraReducers: (builder) => {
-    // Update Profile Reducers
     builder
       .addCase(updateUserProfile.pending, (state) => {
         state.loading = true
@@ -91,8 +81,6 @@ const userProfileSlice = createSlice({
         state.loading = false
         state.error = action.payload as string | null
       })
-    
-    // Fetch Profile Reducers
     builder
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true

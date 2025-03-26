@@ -35,19 +35,19 @@ public class AdminDashboardController {
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         Map<String, Object> stats = new HashMap<>();
 
-        // Count total users
+       
         long totalUsers = userRepository.count();
         stats.put("totalUsers", totalUsers);
 
-        // Count total products
+        
         long totalProducts = productRepository.count();
         stats.put("totalProducts", totalProducts);
 
-        // Count total orders
+        
         long totalOrders = orderRepository.count();
         stats.put("totalOrders", totalOrders);
 
-        // Calculate total revenue from completed orders
+        
         double totalRevenue = orderRepository.findAll().stream()
                 .filter(order -> order.getStatus() == OrderStatus.DELIVERED ||
                         order.getStatus() == OrderStatus.PAYMENT_RECEIVED ||
@@ -56,7 +56,7 @@ public class AdminDashboardController {
                 .sum();
         stats.put("totalRevenue", totalRevenue);
 
-        // Get recent orders (limited to 5)
+        
         List<Map<String, Object>> recentOrders = orderRepository.findAll().stream()
                 .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
                 .limit(5)
@@ -72,7 +72,7 @@ public class AdminDashboardController {
                 .toList();
         stats.put("recentOrders", recentOrders);
 
-        // Calculate monthly sales for the past 6 months
+        
         List<Map<String, Object>> monthlySales = calculateMonthlySales();
         stats.put("monthlySales", monthlySales);
 
@@ -83,7 +83,7 @@ public class AdminDashboardController {
         List<Map<String, Object>> result = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // Create entries for the last 6 months
+        
         for (int i = 5; i >= 0; i--) {
             Map<String, Object> monthlySale = new HashMap<>();
             LocalDate monthDate = today.minusMonths(i);
@@ -91,8 +91,7 @@ public class AdminDashboardController {
 
             monthlySale.put("month", monthName);
 
-            // In a real implementation, you would query the database for the actual revenue for this month
-            // This is a placeholder calculation
+            
             double revenue = calculateRevenueForMonth(monthDate.getMonthValue(), monthDate.getYear());
             monthlySale.put("revenue", revenue);
 
@@ -103,8 +102,7 @@ public class AdminDashboardController {
     }
 
     private double calculateRevenueForMonth(int month, int year) {
-        // In a real implementation, you would query the database for orders in this month and sum their totals
-        // For now, we'll use a placeholder calculation
+        
         return orderRepository.findAll().stream()
                 .filter(order -> {
                     LocalDate orderDate = LocalDate.ofInstant(order.getCreatedAt(),

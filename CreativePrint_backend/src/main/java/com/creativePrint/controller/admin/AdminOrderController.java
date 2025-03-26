@@ -29,7 +29,7 @@ public class AdminOrderController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> getAllOrders(
             @PageableDefault(size = 20) Pageable pageable) {
-        // Implement method to get all orders with pagination
+        
         return ResponseEntity.ok(orderService.getAllOrders(pageable));
     }
 

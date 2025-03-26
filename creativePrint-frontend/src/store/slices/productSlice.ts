@@ -77,14 +77,12 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        // Only update filteredItems (for pagination), not the entire items array
+        
         state.filteredItems = action.payload.products;
         state.categories = action.payload.categories;
         state.totalPages = action.payload.totalPages;
         state.totalItems = action.payload.totalItems;
         state.currentPage = action.payload.currentPage;
-        
-        // Keep the complete items array for reference
         if (state.items.length === 0) {
           state.items = action.payload.products;
         }

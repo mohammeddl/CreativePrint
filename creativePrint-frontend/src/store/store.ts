@@ -16,11 +16,8 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types
         ignoredActions: ['userProfile/update/fulfilled'],
-        // Ignore these field paths in all actions
         ignoredActionPaths: ['meta.arg', 'payload.profilePicture'],
-        // Ignore these paths in the state
         ignoredPaths: ['userProfile.profile.profilePicture'],
       },
     }),

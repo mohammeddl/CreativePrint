@@ -240,5 +240,4 @@ public class OrderServiceImpl implements OrderService {
         return partnerOrders.map(orderMapper::toResponse);
     }
 
-
 }
