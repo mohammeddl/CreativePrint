@@ -1,6 +1,6 @@
-# PrintForge - Print On Demand Platform
+# CreativePrint - Print On Demand Platform
 
-PrintForge is a comprehensive print-on-demand platform enabling creators to design, customize, and sell custom products with automated production and delivery.
+CreativePrint is a comprehensive print-on-demand platform enabling creators to design, customize, and sell custom products with automated production and delivery.
 
 ## Features
 
@@ -15,7 +15,7 @@ PrintForge is a comprehensive print-on-demand platform enabling creators to desi
 ## Tech Stack
 
 **Frontend:**
-- React.js with Next.js
+- React.js 
 - TypeScript
 - TailwindCSS
 
@@ -26,14 +26,14 @@ PrintForge is a comprehensive print-on-demand platform enabling creators to desi
 
 **Infrastructure:**
 - Docker
-- Jenkins CI/CD
+- Github Actions CI/CD
 - DigitalOcean
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- Java 17+
+- Java 21+
 - Docker
 - PostgreSQL 14+
 
@@ -41,7 +41,7 @@ PrintForge is a comprehensive print-on-demand platform enabling creators to desi
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/printforge.git
+git clone https://github.com/mohammeddl/CreativePrint.git
 ```
 
 2. Backend setup:
@@ -69,7 +69,7 @@ Create `.env` files in both frontend and backend directories:
 
 ```env
 # Backend
-DB_URL=jdbc:postgresql://localhost:5432/printforge
+DB_URL=jdbc:postgresql://localhost:5432/creativeprint
 DB_USERNAME=your_username
 DB_PASSWORD=your_password
 JWT_SECRET=your_jwt_secret
@@ -96,4 +96,4 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 
 ## Support
 
-For support, email support@printforge.com or open an issue in the repository.
+For support, email support@creativeprint.com or open an issue in the repository.
