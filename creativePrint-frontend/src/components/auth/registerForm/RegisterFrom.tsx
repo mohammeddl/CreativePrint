@@ -150,7 +150,7 @@ export default function RegisterForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-blue-50 to-pink-50">
       <div className="max-w-md w-full mx-4 my-2">
-        <div className="bg-white rounded-2xl shadow-xl px-8 space-y-6">
+        <div className="bg-white rounded-2xl shadow-xl py-2 px-8 space-y-6">
           {/* Header */}
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold text-gray-900">Create an account</h1>
@@ -201,7 +201,7 @@ export default function RegisterForm() {
                 id="role"
                 name="role"
                 required
-                className="block w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
+                className="block w-full px-3 py-1.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
                 value={formData.role}
                 onChange={handleChange}
               >
@@ -277,7 +277,7 @@ export default function RegisterForm() {
                   name="email"
                   type="email"
                   required
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
+                  className="block w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -302,7 +302,7 @@ export default function RegisterForm() {
                   name="password"
                   type="password"
                   required
-                  className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
+                  className="block w-full pl-10 pr-3 py-1.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-200 ease-in-out"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
@@ -355,7 +355,7 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white 
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white
                 ${isLoading 
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'

@@ -31,9 +31,7 @@ function App() {
           <Route
             path='/'
             element={
-              <ProtectedRoute>
                 <LandingPage />
-              </ProtectedRoute>
             }
           />
           <Route
