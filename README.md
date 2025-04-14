@@ -46,14 +46,14 @@ git clone https://github.com/mohammeddl/CreativePrint.git
 
 2. Backend setup:
 ```bash
-cd printforge-backend
+cd CreativePrint-backend
 ./mvnw clean install
 ./mvnw spring-boot:run
 ```
 
 3. Frontend setup:
 ```bash
-cd printforge-frontend
+cd creativePrint-frontend
 npm install
 npm run dev
 ```
