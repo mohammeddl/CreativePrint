@@ -1,6 +1,8 @@
 package com.creativePrint.service.impl;
 
-import com.creativePrint.repository.OrderItemRepository;
+import com.creativePrint.dto.order.resp.OrderResponse;
+import com.creativePrint.enums.Role;
+import com.creativePrint.repository.*;
 import org.springframework.stereotype.Service;
 
 import com.creativePrint.dto.design.req.DesignRequest;
@@ -15,9 +17,6 @@ import com.creativePrint.model.Design;
 import com.creativePrint.model.Product;
 import com.creativePrint.model.ProductVariant;
 import com.creativePrint.model.User;
-import com.creativePrint.repository.CategoriesRepository;
-import com.creativePrint.repository.DesignRepository;
-import com.creativePrint.repository.ProductRepository;
 import com.creativePrint.service.CloudinaryService;
 import com.creativePrint.service.PartnerService;
 
@@ -31,9 +30,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -48,6 +45,7 @@ public class PartnerProductServiceImpl implements PartnerService {
     private final CategoriesRepository categoryRepository;
     private final CloudinaryService cloudinaryService;
     private final OrderItemRepository orderItemRepository;
+    private final OrderRepository orderRepository;
 
     @Override
     @Transactional
@@ -252,5 +250,10 @@ public class PartnerProductServiceImpl implements PartnerService {
         }
         return productRepository.findAll(pageable)
                 .map(productMapper::toResponse);
+    }
+
+
+    public List<OrderResponse> getOrdersByPartner(){
+        return orderRepository.findAll().stream().filter(Comparator.compo)
     }
 }

@@ -1,7 +1,9 @@
 package com.creativePrint.service;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.creativePrint.dto.order.resp.OrderResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,5 +26,5 @@ public interface PartnerService {
     Page<DesignResponse> getPartnerDesigns(User partner, Pageable pageable);
 
 
-    
+    List<OrderResponse> getOrdersByPartner();
 } 
